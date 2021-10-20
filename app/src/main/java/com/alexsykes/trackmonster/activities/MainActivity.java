@@ -3,9 +3,11 @@ package com.alexsykes.trackmonster.activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.preference.PreferenceManager;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -45,6 +47,9 @@ public class MainActivity extends AppCompatActivity
     public static final int DEFAULT_UPDATE_INTERVAL = 30;
     public static final int FASTEST_UPDATE_INTERVAL = 5;
     private static final int PERMISSION_FINE_LOCATION = 99;
+    int updateInterval;
+    boolean useGPS;
+    boolean trackingOn;
     private View mLayout;
 
     LocationRequest locationRequest;
@@ -62,7 +67,19 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        getPrefs();
+        setUpLocation();
+        updateGPS();
+    }
 
+    private void getPrefs() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        useGPS = prefs.getBoolean("useGPS", false);
+        trackingOn = prefs.getBoolean("trackingOn", false);
+    }
+
+    private void setUpLocation() {
         locationRequest = new LocationRequest();
         locationRequest.setInterval(1000 * DEFAULT_UPDATE_INTERVAL);
         locationRequest.setFastestInterval(1000 * FASTEST_UPDATE_INTERVAL);
@@ -76,7 +93,6 @@ public class MainActivity extends AppCompatActivity
                 updateMap(location);
             }
         };
-        updateGPS();
     }
 
     @Override
@@ -92,9 +108,18 @@ public class MainActivity extends AppCompatActivity
             case R.id.settings:
                 goSettings();
                 return true;
+            case R.id.tracks:
+                goTrackList();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void goTrackList() {
+        Intent intent = new Intent(this, TrackListActivity.class);
+        // intent.putExtra(EXTRA_MESSAGE, message);
+        startActivity(intent);
     }
 
     private void goSettings() {
