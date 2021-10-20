@@ -1,20 +1,27 @@
-package com.alexsykes.trackmonster;
+package com.alexsykes.trackmonster.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
-import android.app.UiAutomation;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.alexsykes.trackmonster.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,14 +32,15 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.snackbar.Snackbar;
 
 // See https://developers.google.com/maps/documentation/android-sdk/map-with-marker
 // https://developers.google.com/maps/documentation/android-sdk/map
 // https://www.youtube.com/watch?v=2ibBng2eJJA
+// https://www.youtube.com/watch?v=_xUcYfbtfsI
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
+    public static final String EXTRA_MESSAGE = "com.alexsykes.trackmonster.activities.MESSAGE";
     private static final int PERMISSION_REQUEST_CAMERA = 0;
     public static final int DEFAULT_UPDATE_INTERVAL = 30;
     public static final int FASTEST_UPDATE_INTERVAL = 5;
@@ -40,6 +48,7 @@ public class MainActivity extends AppCompatActivity
     private View mLayout;
 
     LocationRequest locationRequest;
+    LocationCallback locationCallback;
     FusedLocationProviderClient fusedLocationProviderClient;
 
 
@@ -59,7 +68,39 @@ public class MainActivity extends AppCompatActivity
         locationRequest.setFastestInterval(1000 * FASTEST_UPDATE_INTERVAL);
         locationRequest.setPriority(locationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                Location location = locationResult.getLastLocation();
+                updateMap(location);
+            }
+        };
         updateGPS();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch  (item.getItemId()) {
+            case R.id.settings:
+                goSettings();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void goSettings() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        // intent.putExtra(EXTRA_MESSAGE, message);
+        startActivity(intent);
     }
 
     @Override
@@ -84,7 +125,7 @@ public class MainActivity extends AppCompatActivity
             fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
-                    updateMap(location);
+                        updateMap(location);
                 }
             });
         } else {
@@ -95,6 +136,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void updateMap(Location location) {
+        if(location != null) {
+            double lat = location.getLatitude();
+            double lng = location.getLongitude();
+        }
+
+        Log.i("Info", "updateMap: called");
     }
 
 
