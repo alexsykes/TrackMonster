@@ -51,7 +51,7 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT, lat);
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LNG, lng);
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_NAME, name);
-            values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID, 1);
+            values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID, 2);
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT, alt);
 
             db.insertWithOnConflict("waypoints", null, values, SQLiteDatabase.CONFLICT_REPLACE);
