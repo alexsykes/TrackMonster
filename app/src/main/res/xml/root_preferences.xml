@@ -7,13 +7,15 @@
             android:key="name"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="Name" />
+            android:title="Name"
+            app:useSimpleSummaryProvider="true" />
         <EditTextPreference
             android:defaultValue=""
             android:key="email"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="Email" />
+            android:title="Email"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Track settings">
 
@@ -25,5 +27,12 @@
             android:defaultValue="true"
             android:key="trackingOn"
             android:title="Following ON" />
+        <ListPreference
+            android:entries="@array/sample_rate_entries"
+            android:entryValues="@array/sample_rate_values"
+            android:defaultValue="30"
+            android:key="intervalString"
+            android:title="@string/sample_rate"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 </PreferenceScreen>

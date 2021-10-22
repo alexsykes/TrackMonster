@@ -20,4 +20,10 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="track_list">Track list</string>
+    <string name="sample_rate">Sampling interval (Seconds)</string>
+    <string name="_id">TrackID</string>
+    <string name="name">Name</string>
+    <string name="number_of_points">Waypoints</string>
+    <string name="date">Date</string>
+    <string name="title_activity_tracklist">Tracks</string>
 </resources>

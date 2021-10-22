@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity
     public static final int FASTEST_UPDATE_INTERVAL = 5;
     private static final int PERMISSION_FINE_LOCATION = 99;
     int updateInterval;
+    int trackid;
     boolean useGPS;
     boolean trackingOn;
     private View mLayout;
@@ -55,7 +56,6 @@ public class MainActivity extends AppCompatActivity
     LocationRequest locationRequest;
     LocationCallback locationCallback;
     FusedLocationProviderClient fusedLocationProviderClient;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,11 +77,13 @@ public class MainActivity extends AppCompatActivity
 
         useGPS = prefs.getBoolean("useGPS", false);
         trackingOn = prefs.getBoolean("trackingOn", false);
+        trackid = prefs.getInt("trackid", 0);
+        updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
     }
 
     private void setUpLocation() {
         locationRequest = new LocationRequest();
-        locationRequest.setInterval(1000 * DEFAULT_UPDATE_INTERVAL);
+        locationRequest.setInterval(1000 * updateInterval);
         locationRequest.setFastestInterval(1000 * FASTEST_UPDATE_INTERVAL);
         locationRequest.setPriority(locationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 

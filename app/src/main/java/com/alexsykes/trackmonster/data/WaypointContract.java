@@ -8,10 +8,12 @@ public class WaypointContract extends AppCompatActivity {
 
     public static final class WaypointEntry implements BaseColumns {
 
-        /** Name of database table for scores */
+        /** Name of database table for waypoints */
         public final static String TABLE_NAME = "waypoints";
 
         public final static String _ID = BaseColumns._ID;
+        public final static String COLUMN_WAYPOINTS_TRACKID = "trackid";
+        public final static String COLUMN_WAYPOINTS_ALT = "alt";
         public final static String COLUMN_WAYPOINTS_LAT = "lat";
         public final static String COLUMN_WAYPOINTS_LNG = "lng";
         public final static String COLUMN_WAYPOINTS_CREATED = "created";
