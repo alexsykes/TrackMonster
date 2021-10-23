@@ -90,15 +90,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        Log.i("Info", "startLocationUpdates: ");
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-    }
-
-
     private void getPrefs() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if(canConnect() == false) {
@@ -112,6 +103,12 @@ public class MainActivity extends AppCompatActivity
         trackid = prefs.getInt("trackid", 0);
         updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
         requestingLocationUpdates = trackingOn;
+    }
+
+    protected boolean canConnect() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     private void setUpLocation() {
@@ -170,6 +167,14 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(this, SettingsActivity.class);
         // intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
+    }
+
+    private void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        Log.i("Info", "startLocationUpdates: ");
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
     }
 
     @Override
@@ -270,10 +275,5 @@ public class MainActivity extends AppCompatActivity
         .build();
 
          // map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-    }
-    protected boolean canConnect() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }
