@@ -6,10 +6,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -18,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alexsykes.trackmonster.R;
@@ -54,6 +58,7 @@ public class MainActivity extends AppCompatActivity
     boolean trackingOn;
     boolean requestingLocationUpdates;
     private View mLayout;
+    private TextView statusLine;
     FusedLocationProviderClient fusedLocationProviderClient;
 
     LocationRequest locationRequest;
@@ -63,6 +68,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        statusLine = findViewById(R.id.statusLine);
         mLayout = findViewById(R.id.map);
         fusedLocationProviderClient = new FusedLocationProviderClient(this);
 
@@ -95,6 +101,11 @@ public class MainActivity extends AppCompatActivity
 
     private void getPrefs() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if(canConnect() == false) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("useGPS", true);
+            editor.apply();
+        }
 
         useGPS = prefs.getBoolean("useGPS", false);
         trackingOn = prefs.getBoolean("trackingOn", false);
@@ -114,9 +125,16 @@ public class MainActivity extends AppCompatActivity
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 Location location = locationResult.getLastLocation();
-                String logentry = location.toString();
+                String logentry;
+                double lat = location.getLatitude();
+                double lng = location.getLongitude();
+                double speed = location.getSpeed();
+                double bearing = location.getBearing();
+
+                logentry = "Lat: " + lat + "\nLng: " + lng + "\nSpeed: " + speed + "\nBearing: " + bearing;
                 Log.i("Info", logentry);
                 updateMap(location);
+                statusLine.setText(logentry);
             }
         };
     }
@@ -252,5 +270,10 @@ public class MainActivity extends AppCompatActivity
         .build();
 
          // map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+    protected boolean canConnect() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }

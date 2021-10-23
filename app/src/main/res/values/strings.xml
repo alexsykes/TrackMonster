@@ -26,4 +26,5 @@
     <string name="number_of_points">Waypoints</string>
     <string name="date">Date</string>
     <string name="title_activity_tracklist">Tracks</string>
+    <string name="status">Status:</string>
 </resources>
