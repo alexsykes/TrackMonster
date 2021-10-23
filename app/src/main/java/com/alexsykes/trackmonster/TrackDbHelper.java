@@ -26,8 +26,8 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
-        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, "Another data track");
-        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, "A description of a different track");
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, "A third data track");
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, "A description of yet another track");
 
         db.insert("tracks", null, values);
     }

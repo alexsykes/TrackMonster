@@ -28,8 +28,8 @@ public class TrackMonster extends Application {
         dbInit();
         waypointDbHelper = new WaypointDbHelper(this);
         trackDbHelper = new TrackDbHelper(this);
-        // waypointDbHelper.generateRandomData(40);
-        //  trackDbHelper.addRandomTrack();
+        // waypointDbHelper.generateRandomData(230);
+        // trackDbHelper.addRandomTrack();
 
         // Check for connectivity
         canConnect = canConnect();

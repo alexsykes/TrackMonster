@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -51,17 +52,19 @@ public class MainActivity extends AppCompatActivity
     int trackid;
     boolean useGPS;
     boolean trackingOn;
+    boolean requestingLocationUpdates;
     private View mLayout;
+    FusedLocationProviderClient fusedLocationProviderClient;
 
     LocationRequest locationRequest;
     LocationCallback locationCallback;
-    FusedLocationProviderClient fusedLocationProviderClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mLayout = findViewById(R.id.map);
+        fusedLocationProviderClient = new FusedLocationProviderClient(this);
 
         // Get the SupportMapFragment and request notification when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -69,8 +72,26 @@ public class MainActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
         getPrefs();
         setUpLocation();
-        updateGPS();
+        // updateGPS();
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i("Info", "onResume: ");
+        if (requestingLocationUpdates) {
+            startLocationUpdates();
+        }
+    }
+
+    private void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        Log.i("Info", "startLocationUpdates: ");
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+    }
+
 
     private void getPrefs() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -79,6 +100,7 @@ public class MainActivity extends AppCompatActivity
         trackingOn = prefs.getBoolean("trackingOn", false);
         trackid = prefs.getInt("trackid", 0);
         updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
+        requestingLocationUpdates = trackingOn;
     }
 
     private void setUpLocation() {
@@ -92,6 +114,8 @@ public class MainActivity extends AppCompatActivity
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 Location location = locationResult.getLastLocation();
+                String logentry = location.toString();
+                Log.i("Info", logentry);
                 updateMap(location);
             }
         };
