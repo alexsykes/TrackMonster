@@ -42,6 +42,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 // See https://developers.google.com/maps/documentation/android-sdk/map-with-marker
 // https://developers.google.com/maps/documentation/android-sdk/map
+// https://www.journaldev.com/13325/android-location-api-tracking-gps
 // https://www.youtube.com/watch?v=2ibBng2eJJA
 // https://www.youtube.com/watch?v=_xUcYfbtfsI
 
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity
     private static final int PERMISSION_FINE_LOCATION = 99;
     int updateInterval;
     int trackid;
-    boolean useGPS;
+    boolean useGPSonly;
     boolean trackingOn;
     boolean requestingLocationUpdates;
     private View mLayout;
@@ -64,45 +65,58 @@ public class MainActivity extends AppCompatActivity
     LocationRequest locationRequest;
     LocationCallback locationCallback;
 
+    // Lifecycle
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         statusLine = findViewById(R.id.statusLine);
         mLayout = findViewById(R.id.map);
-        fusedLocationProviderClient = new FusedLocationProviderClient(this);
 
         // Get the SupportMapFragment and request notification when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         getPrefs();
-        setUpLocation();
+        if(!useGPSonly) {
+            fusedLocationProviderClient = new FusedLocationProviderClient(this);
+            setUpLocation();
+        }
         // updateGPS();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i("Info", "onResume: ");
+        Log.i("Info", "MainActivity: onResume: ");
         if (requestingLocationUpdates) {
             startLocationUpdates();
         }
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i("Info", "MainActivity: onStart: ");
+        if (requestingLocationUpdates) {
+            startLocationUpdates();
+        }
+    }
+
+    // Setup
     private void getPrefs() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if(canConnect() == false) {
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean("useGPS", true);
+            editor.putBoolean("useGPSonly", true);
             editor.apply();
         }
 
-        useGPS = prefs.getBoolean("useGPS", false);
+        useGPSonly = prefs.getBoolean("useGPSonly", false);
         trackingOn = prefs.getBoolean("trackingOn", false);
         trackid = prefs.getInt("trackid", 0);
         updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
-        requestingLocationUpdates = trackingOn;
+        requestingLocationUpdates = !useGPSonly;
     }
 
     protected boolean canConnect() {
@@ -157,6 +171,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    // Navigation
     private void goTrackList() {
         Intent intent = new Intent(this, TrackListActivity.class);
         // intent.putExtra(EXTRA_MESSAGE, message);
@@ -169,6 +184,7 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
+    // Location
     private void startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
