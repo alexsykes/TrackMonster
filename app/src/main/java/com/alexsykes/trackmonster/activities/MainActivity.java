@@ -1,8 +1,10 @@
 package com.alexsykes.trackmonster.activities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
@@ -25,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alexsykes.trackmonster.R;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -38,7 +41,9 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 // See https://developers.google.com/maps/documentation/android-sdk/map-with-marker
 // https://developers.google.com/maps/documentation/android-sdk/map
@@ -47,20 +52,29 @@ import com.google.android.gms.tasks.OnSuccessListener;
 // https://www.youtube.com/watch?v=_xUcYfbtfsI
 
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
+        implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleApiClient.ConnectionCallbacks {
     public static final String EXTRA_MESSAGE = "com.alexsykes.trackmonster.activities.MESSAGE";
     private static final int PERMISSION_REQUEST_CAMERA = 0;
     public static final int DEFAULT_UPDATE_INTERVAL = 30;
     public static final int FASTEST_UPDATE_INTERVAL = 5;
     private static final int PERMISSION_FINE_LOCATION = 99;
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private final LatLng defaultLocation = new LatLng(-33.8523341, 151.2106085);
     int updateInterval;
     int trackid;
     boolean useGPSonly;
     boolean trackingOn;
     boolean requestingLocationUpdates;
     private View mLayout;
+    private GoogleMap map;
     private TextView statusLine;
     FusedLocationProviderClient fusedLocationProviderClient;
+    GoogleApiClient mGoogleApiClient;
+
+    private static final int DEFAULT_ZOOM = 15;
+    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private boolean locationPermissionGranted;
+    private Location lastKnownLocation;
 
     LocationRequest locationRequest;
     LocationCallback locationCallback;
@@ -72,6 +86,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         statusLine = findViewById(R.id.statusLine);
         mLayout = findViewById(R.id.map);
+        // Construct a FusedLocationProviderClient.
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         // Get the SupportMapFragment and request notification when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -268,28 +284,113 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onMapReady(GoogleMap map) {
-        // Add a marker in Sydney, Australia,
-        // and move the map's camera to the same location.
-
+        this.map = map;
         UiSettings uiSettings = map.getUiSettings();
         uiSettings.setZoomControlsEnabled(true);
         uiSettings.setCompassEnabled(true);
+        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        getLocationPermission();
+        try {
+            if (locationPermissionGranted) {
+                map.setMyLocationEnabled(true);
+                map.getUiSettings().setMyLocationButtonEnabled(true);
+            } else {
+                map.setMyLocationEnabled(false);
+                map.getUiSettings().setMyLocationButtonEnabled(false);
+            }
+        } catch (SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage());
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                buildGoogleApiClient();
+                map.setMyLocationEnabled(true);
+            }
+        } else {
+            buildGoogleApiClient();
+            map.setMyLocationEnabled(true);
+        }
 
         LatLng home = new LatLng(53.594700, -2.560996);
-        LatLng madrakah = new LatLng(22.184852, 40.726148);
-        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        map.addMarker(new MarkerOptions()
-                .position(madrakah)
-                .title("Madrakah"));
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(home, 15));
-        // map.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
-
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-        .target(home)
-                .zoom(15)
-        .bearing(90)
-        .build();
-
-         // map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(home, DEFAULT_ZOOM));
+        getDeviceLocation();
     }
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                //.addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }    /**
+     * Prompts the user for permission to use the device location.
+     */
+    // [START maps_current_place_location_permission]
+    private void getLocationPermission() {
+        /*
+         * Request location permission, so that we can get the location of the
+         * device. The result of the permission request is handled by a callback,
+         * onRequestPermissionsResult.
+         */
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            locationPermissionGranted = true;
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+    }
+    // [END maps_current_place_location_permission]
+
+    // [START maps_current_place_get_device_location]
+    private void getDeviceLocation() {
+
+/*         * Get the best and most recent location of the device, which may be null in rare
+         * cases when a location is not available.*/
+
+        try {
+            if (locationPermissionGranted) {
+                Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
+                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Location> task) {
+                        if (task.isSuccessful()) {
+                            // Set the map's camera position to the current location of the device.
+                            lastKnownLocation = task.getResult();
+                            if (lastKnownLocation != null) {
+                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                        new LatLng(lastKnownLocation.getLatitude(),
+                                                lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                            }
+                        } else {
+                            Log.d(TAG, "Current location is null. Using defaults.");
+                            Log.e(TAG, "Exception: %s", task.getException());
+                            map.moveCamera(CameraUpdateFactory
+                                    .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+                            map.getUiSettings().setMyLocationButtonEnabled(false);
+                        }
+                    }
+                });
+            }
+        } catch (SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage(), e);
+        }
+    }
+    // [END maps_current_place_get_device_location]
 }
