@@ -299,10 +299,11 @@ public class MainActivity extends AppCompatActivity
     }
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-
+        Log.i(TAG, "onConnected: restored");
     }
     @Override
     public void onConnectionSuspended(int i) {
+        Log.i(TAG, "onConnected: suspended" + i);
 
     }
     // Events ends
