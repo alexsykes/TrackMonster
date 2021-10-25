@@ -33,7 +33,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         SharedPreferences prefs;
-        boolean useGPS;
+        boolean useGPSonly;
         boolean trackingOn;
 
         @Override
@@ -46,17 +46,17 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void setup() {
-            useGPS = prefs.getBoolean("useGPS", true);
+            useGPSonly = prefs.getBoolean("useGPSonly", true);
             trackingOn = prefs.getBoolean("trackingOn", true);
 
-            SwitchPreference useGPSPref = findPreference("useGPS");
+            SwitchPreference useGPSPref = findPreference("useGPSonly");
             assert useGPSPref != null;
 
             useGPSPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    useGPS = Boolean.valueOf(newValue.toString());
-                    useGPSPref.setChecked(useGPS);
+                    useGPSonly = Boolean.valueOf(newValue.toString());
+                    useGPSPref.setChecked(useGPSonly);
                     return false;
                 }
             });

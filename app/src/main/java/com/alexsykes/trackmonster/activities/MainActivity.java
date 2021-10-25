@@ -18,6 +18,7 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,7 +31,6 @@ import com.alexsykes.trackmonster.R;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -40,7 +40,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -58,8 +57,8 @@ public class MainActivity extends AppCompatActivity
     public static final int DEFAULT_UPDATE_INTERVAL = 30;
     public static final int FASTEST_UPDATE_INTERVAL = 5;
     private static final int PERMISSION_FINE_LOCATION = 99;
-    private static final String TAG = MainActivity.class.getSimpleName();
-    private final LatLng defaultLocation = new LatLng(-33.8523341, 151.2106085);
+    private static final String TAG = "Info";
+    private final LatLng defaultLocation = new LatLng(52.023728, -1.147916);
     int updateInterval;
     int trackid;
     boolean useGPSonly;
@@ -73,13 +72,16 @@ public class MainActivity extends AppCompatActivity
 
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    // Keys for storing activity state.
+    // [START maps_current_place_state_keys]
+    private static final String KEY_CAMERA_POSITION = "camera_position";
+    private static final String KEY_LOCATION = "location";
     private boolean locationPermissionGranted;
     private Location lastKnownLocation;
+    private CameraPosition cameraPosition;
+    private LocationCallback locationCallback;
 
-    LocationRequest locationRequest;
-    LocationCallback locationCallback;
-
-    // Lifecycle
+    // Lifecycle starts
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,14 +91,31 @@ public class MainActivity extends AppCompatActivity
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    double lat = location.getLatitude();
+                    double lng = location.getLongitude();
+                    // Update UI with location data
+                    // ...
+                }
+            }
+        };
+
+
+
         // Get the SupportMapFragment and request notification when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         getPrefs();
         if(!useGPSonly) {
-            fusedLocationProviderClient = new FusedLocationProviderClient(this);
-            setUpLocation();
+        //    fusedLocationProviderClient = new FusedLocationProviderClient(this);
+        //    setUpLocation();
         }
         // updateGPS();
     }
@@ -104,66 +123,31 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i("Info", "MainActivity: onResume: ");
-        if (requestingLocationUpdates) {
-            startLocationUpdates();
-        }
+        Log.i(TAG, "MainActivity: onResume: ");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i("Info", "MainActivity: onStart: ");
-        if (requestingLocationUpdates) {
-            startLocationUpdates();
+        Log.i(TAG, "MainActivity: onStart: ");
+    }
+
+    @Override
+    public void onRestoreInstanceState(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+        super.onRestoreInstanceState(savedInstanceState, persistentState);
+        Log.i(TAG, "MainActivity: onRestoreInstanceState: ");
+        lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
+        cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.i(TAG, "MainActivity: onSaveInstanceState: ");
+        if (map != null) {
+            outState.putParcelable(KEY_CAMERA_POSITION, map.getCameraPosition());
+            outState.putParcelable(KEY_LOCATION, lastKnownLocation);
         }
-    }
-
-    // Setup
-    private void getPrefs() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if(canConnect() == false) {
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean("useGPSonly", true);
-            editor.apply();
-        }
-
-        useGPSonly = prefs.getBoolean("useGPSonly", false);
-        trackingOn = prefs.getBoolean("trackingOn", false);
-        trackid = prefs.getInt("trackid", 0);
-        updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
-        requestingLocationUpdates = !useGPSonly;
-    }
-
-    protected boolean canConnect() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
-    }
-
-    private void setUpLocation() {
-        locationRequest = new LocationRequest();
-        locationRequest.setInterval(1000 * updateInterval);
-        locationRequest.setFastestInterval(1000 * FASTEST_UPDATE_INTERVAL);
-        locationRequest.setPriority(locationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                super.onLocationResult(locationResult);
-                Location location = locationResult.getLastLocation();
-                String logentry;
-                double lat = location.getLatitude();
-                double lng = location.getLongitude();
-                double speed = location.getSpeed();
-                double bearing = location.getBearing();
-
-                logentry = "Lat: " + lat + "\nLng: " + lng + "\nSpeed: " + speed + "\nBearing: " + bearing;
-                Log.i("Info", logentry);
-                updateMap(location);
-                statusLine.setText(logentry);
-            }
-        };
     }
 
     @Override
@@ -187,7 +171,54 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    // Navigation
+    // Lifecycle ends
+
+    // Setup
+    private void getPrefs() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if(canConnect() == false) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("useGPSonly", true);
+            editor.apply();
+        }
+
+        useGPSonly = prefs.getBoolean("useGPSonly", false);
+        trackingOn = prefs.getBoolean("trackingOn", false);
+        trackid = prefs.getInt("trackid", 0);
+        updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
+        requestingLocationUpdates = !useGPSonly;
+    }
+    protected boolean canConnect() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    /*private void setUpLocation() {
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(1000 * updateInterval);
+        locationRequest.setFastestInterval(1000 * FASTEST_UPDATE_INTERVAL);
+        locationRequest.setPriority(locationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                Location location = locationResult.getLastLocation();
+                String logentry;
+                double lat = location.getLatitude();
+                double lng = location.getLongitude();
+                double speed = location.getSpeed();
+                double bearing = location.getBearing();
+
+                logentry = "Lat: " + lat + "\nLng: " + lng + "\nSpeed: " + speed + "\nBearing: " + bearing;
+                Log.i("Info", logentry);
+                updateMap(location);
+                statusLine.setText(logentry);
+            }
+        };
+    }*/
+    // Activity Navigation starts
     private void goTrackList() {
         Intent intent = new Intent(this, TrackListActivity.class);
         // intent.putExtra(EXTRA_MESSAGE, message);
@@ -199,16 +230,59 @@ public class MainActivity extends AppCompatActivity
         // intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
     }
+    // Activity Navigation ends
 
     // Location
-    private void startLocationUpdates() {
+/*    private void startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         Log.i("Info", "startLocationUpdates: ");
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-    }
+    }*/
 
+    // Events starts
+    @Override
+    public void onMapReady(GoogleMap map) {
+        this.map = map;
+        UiSettings uiSettings = map.getUiSettings();
+        uiSettings.setZoomControlsEnabled(true);
+        uiSettings.setCompassEnabled(true);
+        uiSettings.setAllGesturesEnabled(true);
+        uiSettings.setMapToolbarEnabled(true);
+        map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+        getLocationPermission();
+        try {
+            if (locationPermissionGranted) {
+                map.setMyLocationEnabled(true);
+                map.getUiSettings().setMyLocationButtonEnabled(true);
+            } else {
+                map.setMyLocationEnabled(false);
+                map.getUiSettings().setMyLocationButtonEnabled(false);
+            }
+        } catch (SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage());
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                buildGoogleApiClient();
+                map.setMyLocationEnabled(true);
+            }
+        } else {
+            buildGoogleApiClient();
+            map.setMyLocationEnabled(true);
+        }
+
+        // LatLng home = new LatLng(53.594700, -2.560996);
+         map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+        if(cameraPosition != null) {
+            map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        }
+        getDeviceLocation();
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -223,6 +297,15 @@ public class MainActivity extends AppCompatActivity
                 }
         }
     }
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+    // Events ends
 
     private void  updateGPS(){
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(MainActivity.this);
@@ -282,42 +365,7 @@ public class MainActivity extends AppCompatActivity
      * Play services inside the SupportMapFragment. The API invokes this method after the user has
      * installed Google Play services and returned to the app.
      */
-    @Override
-    public void onMapReady(GoogleMap map) {
-        this.map = map;
-        UiSettings uiSettings = map.getUiSettings();
-        uiSettings.setZoomControlsEnabled(true);
-        uiSettings.setCompassEnabled(true);
-        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        getLocationPermission();
-        try {
-            if (locationPermissionGranted) {
-                map.setMyLocationEnabled(true);
-                map.getUiSettings().setMyLocationButtonEnabled(true);
-            } else {
-                map.setMyLocationEnabled(false);
-                map.getUiSettings().setMyLocationButtonEnabled(false);
-            }
-        } catch (SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
-        }
 
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED) {
-                buildGoogleApiClient();
-                map.setMyLocationEnabled(true);
-            }
-        } else {
-            buildGoogleApiClient();
-            map.setMyLocationEnabled(true);
-        }
-
-        LatLng home = new LatLng(53.594700, -2.560996);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(home, DEFAULT_ZOOM));
-        getDeviceLocation();
-    }
 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -328,17 +376,6 @@ public class MainActivity extends AppCompatActivity
         mGoogleApiClient.connect();
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }    /**
-     * Prompts the user for permission to use the device location.
-     */
     // [START maps_current_place_location_permission]
     private void getLocationPermission() {
         /*
@@ -373,6 +410,7 @@ public class MainActivity extends AppCompatActivity
                         if (task.isSuccessful()) {
                             // Set the map's camera position to the current location of the device.
                             lastKnownLocation = task.getResult();
+                            Log.i(TAG, "onComplete: lastKnownLocation");
                             if (lastKnownLocation != null) {
                                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(lastKnownLocation.getLatitude(),
@@ -393,4 +431,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
     // [END maps_current_place_get_device_location]
+
+
 }
