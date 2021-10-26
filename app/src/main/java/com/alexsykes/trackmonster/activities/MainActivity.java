@@ -28,6 +28,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alexsykes.trackmonster.R;
+import com.alexsykes.trackmonster.TrackDbHelper;
+import com.alexsykes.trackmonster.data.WaypointDbHelper;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -79,7 +81,6 @@ public class MainActivity extends AppCompatActivity
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
     public static final String EXTRA_MESSAGE = "com.alexsykes.trackmonster.activities.MESSAGE";
-    private static final int PERMISSION_REQUEST_CAMERA = 0;
     public static final int DEFAULT_UPDATE_INTERVAL = 30;
     public static final int FASTEST_UPDATE_INTERVAL = 5;
     private static final int PERMISSION_FINE_LOCATION = 99;
@@ -90,6 +91,8 @@ public class MainActivity extends AppCompatActivity
     private LocationCallback locationCallback;
     private Location currentLocation;
     private LocationRequest locationRequest;
+    private TrackDbHelper trackDbHelper;
+    private WaypointDbHelper waypointDbHelper;
 
     // Lifecycle starts
     @Override
@@ -113,14 +116,10 @@ public class MainActivity extends AppCompatActivity
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
-                    double lat = location.getLatitude();
-                    double lng = location.getLongitude();
-                    // Update UI with location data
-                    // ...
+                     processNewLocation(location);
                 }
             }
         };
-
 
         // Get the SupportMapFragment and request notification when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -134,19 +133,36 @@ public class MainActivity extends AppCompatActivity
         // updateGPS();
     }
 
+    private void processNewLocation(Location location) {
+        waypointDbHelper = new WaypointDbHelper(this);
+        String logentry;
+        double lat = location.getLatitude();
+        double lng = location.getLongitude();
+        double speed = location.getSpeed();
+        double bearing = location.getBearing();
+        double alt = location.getAltitude();
+
+        waypointDbHelper.addLocation(lat, lng, speed, bearing, alt);
+
+        logentry = "Status:\nLat: " + lat + "\nLng: " + lng + "\nSpeed: " + speed + "\nBearing: " + bearing;
+        Log.i("Info", logentry);
+
+        // TODO updateCamera
+        // updateMap(location);
+        statusLine.setText(logentry);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        startLocationUpdates();
         Log.i(TAG, "MainActivity: onResume: ");
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        // startLocationUpdates();
         Log.i(TAG, "MainActivity: onStart: ");
-
-
     }
 
     @Override
@@ -212,30 +228,6 @@ public class MainActivity extends AppCompatActivity
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
-    /*private void setUpLocation() {
-        locationRequest = new LocationRequest();
-        locationRequest.setInterval(1000 * updateInterval);
-        locationRequest.setFastestInterval(1000 * FASTEST_UPDATE_INTERVAL);
-        locationRequest.setPriority(locationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                super.onLocationResult(locationResult);
-                Location location = locationResult.getLastLocation();
-                String logentry;
-                double lat = location.getLatitude();
-                double lng = location.getLongitude();
-                double speed = location.getSpeed();
-                double bearing = location.getBearing();
-
-                logentry = "Lat: " + lat + "\nLng: " + lng + "\nSpeed: " + speed + "\nBearing: " + bearing;
-                Log.i("Info", logentry);
-                updateMap(location);
-                statusLine.setText(logentry);
-            }
-        };
-    }*/
     // Activity Navigation starts
     private void goTrackList() {
         Intent intent = new Intent(this, TrackListActivity.class);
@@ -249,15 +241,6 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
     // Activity Navigation ends
-
-    // Location
-/*    private void startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        Log.i("Info", "startLocationUpdates: ");
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-    }*/
 
     // Events starts
     @Override
@@ -274,6 +257,7 @@ public class MainActivity extends AppCompatActivity
             if (locationPermissionGranted) {
                 map.setMyLocationEnabled(true);
                 map.getUiSettings().setMyLocationButtonEnabled(true);
+                startLocationUpdates();
             } else {
                 map.setMyLocationEnabled(false);
                 map.getUiSettings().setMyLocationButtonEnabled(false);
@@ -309,7 +293,7 @@ public class MainActivity extends AppCompatActivity
         switch (requestCode) {
             case PERMISSION_FINE_LOCATION:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    updateGPS();
+                    //updateGPS();
                 } else {
                     Toast.makeText(this, "Permissions needed", Toast.LENGTH_SHORT).show();
                     finish();
@@ -328,7 +312,7 @@ public class MainActivity extends AppCompatActivity
 
     }
     // Events ends
-
+/*
     private void updateGPS() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(MainActivity.this);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -336,7 +320,7 @@ public class MainActivity extends AppCompatActivity
             fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
-                    updateMap(location);
+                    // updateMap(location);
                 }
             });
         } else {
@@ -344,8 +328,8 @@ public class MainActivity extends AppCompatActivity
                 requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_FINE_LOCATION);
             }
         }
-    }
-
+    }*/
+/*
     private void updateMap(Location location) {
         if (location != null) {
             double lat = location.getLatitude();
@@ -353,29 +337,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         Log.i("Info", "updateMap: called");
-    }
-
-
-/*
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQUEST_CAMERA) {
-            // Request for camera permission.
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission has been granted. Start camera preview Activity.
-                Snackbar.make(mLayout, R.string.camera_permission_granted,
-                        Snackbar.LENGTH_SHORT)
-                        .show();
-                // startCamera();
-            } else {
-                // Permission request was denied.
-                Snackbar.make(mLayout, R.string.camera_permission_denied,
-                        Snackbar.LENGTH_SHORT)
-                        .show();
-            }
-        }
     }*/
 
     /**
@@ -403,7 +364,6 @@ public class MainActivity extends AppCompatActivity
                 locationCallback,
                 Looper.getMainLooper());
     }
-
 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -468,45 +428,4 @@ public class MainActivity extends AppCompatActivity
             Log.e("Exception: %s", e.getMessage(), e);
         }
     }
-    // [END maps_current_place_get_device_location]
-
-    // [START maps_current_place_get_device_location]
-    /*private void getDeviceCurrentLocation() {
-
-        *//*         * Get the best and most recent location of the device, which may be null in rare
-         * cases when a location is not available.*//*
-
-        try {
-            if (locationPermissionGranted) {
-                Task<Location> locationResult = fusedLocationProviderClient.getCurrentLocation()
-                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            currentLocation = task.getResult();
-                            Log.i(TAG, "getDeviceCurrentLocation: onComplete: currentLocation");
-                            if (currentLocation != null) {
-                                lastKnownLocation = currentLocation;
-                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                        new LatLng(currentLocation.getLatitude(),
-                                                currentLocation.getLongitude()), DEFAULT_ZOOM));
-                            }
-                        } else {
-                            Log.d(TAG, "Current location is null. Using defaults.");
-                            Log.e(TAG, "Exception: %s", task.getException());
-                            map.moveCamera(CameraUpdateFactory
-                                    .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
-                            map.getUiSettings().setMyLocationButtonEnabled(false);
-                        }
-                    }
-                });
-            }
-        } catch (SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage(), e);
-        }
-    }*/
-    // [END maps_current_place_get_device_location]
-
-
 }
