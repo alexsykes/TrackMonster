@@ -30,4 +30,5 @@
     <string name="pause">Pause</string>
     <string name="start">Start</string>
     <string name="save">Save</string>
+    <string name="new_track">New track</string>
 </resources>
