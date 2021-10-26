@@ -1,4 +1,4 @@
-package com.alexsykes.trackmonster;
+package com.alexsykes.trackmonster.data;
 
 import android.content.ContentValues;
 import android.content.Context;

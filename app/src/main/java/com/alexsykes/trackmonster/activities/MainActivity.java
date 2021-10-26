@@ -28,7 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alexsykes.trackmonster.R;
-import com.alexsykes.trackmonster.TrackDbHelper;
+import com.alexsykes.trackmonster.data.TrackDbHelper;
 import com.alexsykes.trackmonster.data.WaypointDbHelper;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -44,7 +44,6 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 // See https://developers.google.com/maps/documentation/android-sdk/map-with-marker
@@ -82,7 +81,7 @@ public class MainActivity extends AppCompatActivity
     private static final String KEY_LOCATION = "location";
     public static final String EXTRA_MESSAGE = "com.alexsykes.trackmonster.activities.MESSAGE";
     public static final int DEFAULT_UPDATE_INTERVAL = 30;
-    public static final int FASTEST_UPDATE_INTERVAL = 5;
+    public static final int FASTEST_UPDATE_INTERVAL = 30;
     private static final int PERMISSION_FINE_LOCATION = 99;
     private static final String TAG = "Info";
 
@@ -130,7 +129,6 @@ public class MainActivity extends AppCompatActivity
             //    fusedLocationProviderClient = new FusedLocationProviderClient(this);
             //    setUpLocation();
         }
-        // updateGPS();
     }
 
     private void processNewLocation(Location location) {
@@ -257,7 +255,11 @@ public class MainActivity extends AppCompatActivity
             if (locationPermissionGranted) {
                 map.setMyLocationEnabled(true);
                 map.getUiSettings().setMyLocationButtonEnabled(true);
-                startLocationUpdates();
+                if(trackingOn) {
+                    startLocationUpdates();
+                } else {
+                    stopLocationUpdates();
+                }
             } else {
                 map.setMyLocationEnabled(false);
                 map.getUiSettings().setMyLocationButtonEnabled(false);
@@ -363,6 +365,30 @@ public class MainActivity extends AppCompatActivity
         fusedLocationProviderClient.requestLocationUpdates(locationRequest,
                 locationCallback,
                 Looper.getMainLooper());
+    }
+
+    /**
+     * Manipulates the map when it's available.
+     * The API invokes this callback when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just add a marker near Sydney, Australia.
+     * If Google Play services is not installed on the device, the user receives a prompt to install
+     * Play services inside the SupportMapFragment. The API invokes this method after the user has
+     * installed Google Play services and returned to the app.
+     */
+    private void stopLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Log.i(TAG, "startLocationUpdates: ");
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
     protected synchronized void buildGoogleApiClient() {

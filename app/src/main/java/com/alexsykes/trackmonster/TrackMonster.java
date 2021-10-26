@@ -8,6 +8,7 @@ import android.net.NetworkInfo;
 import android.util.Log;
 
 import com.alexsykes.trackmonster.data.TrackContract;
+import com.alexsykes.trackmonster.data.TrackDbHelper;
 import com.alexsykes.trackmonster.data.WaypointContract;
 import com.alexsykes.trackmonster.data.WaypointDbHelper;
 

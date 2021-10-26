@@ -2,7 +2,6 @@ package com.alexsykes.trackmonster.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -13,12 +12,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.alexsykes.trackmonster.R;
-import com.alexsykes.trackmonster.TrackDbHelper;
+import com.alexsykes.trackmonster.data.TrackDbHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 
 public class TrackListActivity extends AppCompatActivity {
