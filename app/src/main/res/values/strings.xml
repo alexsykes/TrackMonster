@@ -27,4 +27,7 @@
     <string name="date">Date</string>
     <string name="title_activity_tracklist">Tracks</string>
     <string name="status">Status:</string>
+    <string name="pause">Pause</string>
+    <string name="start">Start</string>
+    <string name="save">Save</string>
 </resources>
