@@ -33,17 +33,18 @@ public class TrackListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_track_list);
 
+        trackDbHelper = new TrackDbHelper(this);
+        populateTrackList();
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Here's a Snackbar", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                String name = "Sample track";
+                String description = "Something about this track";
+                trackDbHelper.addRandomTrack();
             }
         });
-
-        trackDbHelper = new TrackDbHelper(this);
-        populateTrackList();
 
     }
 

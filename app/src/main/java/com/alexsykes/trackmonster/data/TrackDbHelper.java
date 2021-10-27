@@ -60,4 +60,10 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         cursor.close();
         return theTrackList;
     }
+
+    public void addEntry(String name, String description) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+      //  String query  "INSERT INTO " + DATABASE_NAME
+    }
 }
