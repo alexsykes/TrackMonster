@@ -5,10 +5,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.TextView;
 
 import com.alexsykes.trackmonster.R;
@@ -67,15 +70,32 @@ public class TrackListActivity extends AppCompatActivity {
             countTextView = itemView.findViewById(R.id.numWP);
             createdTextView = itemView.findViewById(R.id.date);
         }
+
+        public void bind(final HashMap<String, String> theTrack, final OnItemClickListener listener) {
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String id = theTrack.get("id");
+                    Log.i("Info", "onClick: itemClicked " + id);
+                }
+            });
+        }
     }
 
     private class TrackListAdapter extends RecyclerView.Adapter<TrackHolder> {
         ArrayList<HashMap<String, String>> theTrackList;
         HashMap<String, String> theTrack;
+        OnItemClickListener listener;
 
         public TrackListAdapter(ArrayList<HashMap<String, String>> theTrackList) {
             this.theTrackList = theTrackList;
         }
+
+        public TrackListAdapter(ArrayList<HashMap<String, String>> theTrackList, OnItemClickListener listener) {
+            this.theTrackList = theTrackList;
+            this.listener = listener;
+        }
+
 
         @Override
         public void onAttachedToRecyclerView(RecyclerView recyclerView) {
@@ -105,6 +125,7 @@ public class TrackListActivity extends AppCompatActivity {
             holder.idTextView.setText(theTrack.get("id"));
             holder.nameTextView.setText(theTrack.get("name"));
             holder.countTextView.setText(theTrack.get("count"));
+            holder.bind(theTrack, listener);
            // holder.createdTextView.setText(theCreated);
         }
 
@@ -112,5 +133,11 @@ public class TrackListActivity extends AppCompatActivity {
         public int getItemCount() {
             return theTrackList.size();
         }
+
+
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(HashMap<String, String> theTrackList);
     }
 }
