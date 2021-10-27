@@ -31,4 +31,6 @@
     <string name="start">Start</string>
     <string name="save">Save</string>
     <string name="new_track">New track</string>
+    <string name="track_description">Track description</string>
+    <string name="track_name">Track name</string>
 </resources>

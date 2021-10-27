@@ -15,6 +15,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TrackMonster">
         <activity
+            android:name=".activities.TrackDialogActivity"
+            android:parentActivityName=".activities.TrackListActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.TrackListActivity"
             android:exported="false"
             android:label="@string/title_activity_tracklist"
