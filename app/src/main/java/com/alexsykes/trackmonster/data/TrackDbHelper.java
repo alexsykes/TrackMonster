@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -32,6 +33,24 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         db.insert("tracks", null, values);
     }
 
+    @SuppressLint("Range")
+    public HashMap<String, String> getTrackData(String trackid) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        HashMap<String, String> theTrack = new HashMap<String, String>();
+
+        String query = "SELECT * FROM tracks WHERE _id = " + trackid;
+        Log.i("Info", query);
+        Cursor cursor = db.rawQuery(query, null);
+
+        cursor.moveToFirst();
+        theTrack.put("id", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry._ID)));
+        theTrack.put("description", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION)));
+        theTrack.put("isCurrent", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT)));
+        theTrack.put("isVisible", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)));
+        theTrack.put("name", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME)));
+        cursor.close();
+        return theTrack;
+    }
     public ArrayList<HashMap<String, String>> getTrackList() {
         SQLiteDatabase db = this.getWritableDatabase();
         ArrayList<HashMap<String, String>> theTrackList = new ArrayList<>();

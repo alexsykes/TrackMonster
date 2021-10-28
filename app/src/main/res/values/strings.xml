@@ -37,4 +37,5 @@
     <string name="show_on_map">Show on map</string>
     <string name="a_description_of_the_track">A description of the track</string>
     <string name="track_details">Track details</string>
+    <string name="active_track">Active track</string>
 </resources>

@@ -40,4 +40,11 @@
         android:layout_height="wrap_content"
         android:checked="true"
         android:text="@string/show_on_map" />
+
+    <CheckBox
+        android:id="@+id/track_active_checkBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:text="@string/active_track" />
 </LinearLayout>
