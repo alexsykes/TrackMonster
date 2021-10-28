@@ -7,6 +7,7 @@ public class Track {
     String created;
     String updated;
     boolean isVisible;
+    boolean isCurrent;
 
     public Track() {
     }

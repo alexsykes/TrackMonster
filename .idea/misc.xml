@@ -16,6 +16,7 @@
         <entry key="app/src/main/res/layout/track_row.xml" value="0.1" />
         <entry key="app/src/main/res/menu/bottom_menu.xml" value="0.5388888888888889" />
         <entry key="app/src/main/res/menu/main_menu.xml" value="0.5635416666666667" />
+        <entry key="app/src/main/res/menu/track_dialog_menu.xml" value="0.22592592592592592" />
         <entry key="app/src/main/res/xml/root_preferences.xml" value="0.5635416666666667" />
       </map>
     </option>

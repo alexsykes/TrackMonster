@@ -38,9 +38,8 @@ public class TrackListActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 Intent intent = new Intent(getApplicationContext(), TrackDialogActivity.class);
-
+                intent.putExtra("task", "insert");
                 startActivity(intent);
             }
         });
@@ -62,16 +61,17 @@ public class TrackListActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    public void onClickCalled(String trialid) {
+    public void onClickCalled(String trackid) {
         // Call another activity here and pass some arguments to it.
         Intent intent = new Intent(this, TrackDialogActivity.class);
-        // intent.putExtra("id", trialid);
+        intent.putExtra("trackid", trackid);
+        intent.putExtra("task", "update");
         startActivity(intent);
       //  startActivityForResult(intent, TEXT_REQUEST);
     }
 
     private void populateTrackList() {
-        theTrackList = trackDbHelper.getTrackList();
+        theTrackList = trackDbHelper.getShortTrackList();
         trackView = findViewById(R.id.trackView);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);

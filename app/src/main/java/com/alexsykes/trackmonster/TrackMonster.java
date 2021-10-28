@@ -66,6 +66,7 @@ public class TrackMonster extends Application {
                 + TrackContract.TrackEntry.COLUMN_TRACKS_NAME + " TEXT NOT NULL, "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION + " TEXT,  "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE + " INTEGER DEFAULT 1,  "
+                + TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT + " INTEGER DEFAULT 1,  "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_CREATED + " TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_UPDATED  + " TEXT );";
 

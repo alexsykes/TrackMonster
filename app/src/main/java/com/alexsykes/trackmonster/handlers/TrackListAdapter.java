@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -51,31 +52,27 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     public void onBindViewHolder(@NonNull TrackHolder holder, int position) {
         theTrack = theTrackList.get(position);
 
-        String theCreated = theTrack.get("created");
-        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss Z");
-        // Date date = format.parse(theCreated);
-
-        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm:ss");
-        // String created = timeFormat.format(theCreated);
-        holder.idTextView.setText(theTrack.get("id"));
-        holder.nameTextView.setText(theTrack.get("name"));
-        holder.countTextView.setText(theTrack.get("count"));
-        holder.bind(theTrack, listener);
+      //  holder.idTextView.setText(theTrack.get("id"));
         // holder.createdTextView.setText(theCreated);
+        //  holder.isVisibleView.setImage("@drawable/ic_baseline_add_circle_24");
+        holder.nameTextView.setText(theTrack.get("name"));
+        holder.bind(theTrack, listener);
     }
 
     @Override
     public int getItemCount() { return theTrackList.size(); }
 
     public static class TrackHolder extends RecyclerView.ViewHolder {
-        TextView idTextView, nameTextView, countTextView, createdTextView;
+        TextView idTextView, nameTextView;
+        ImageView isVisibleView, isCurrentView;
 
         public TrackHolder(@NonNull View itemView) {
             super(itemView);
-            idTextView = itemView.findViewById(R.id.id);
+//            idTextView = itemView.findViewById(R.id.id);
+//            isVisibleView = itemView.findViewById(R.id.isVisible);
+//            isCurrentView = itemView.findViewById(R.id.isActive);
+
             nameTextView = itemView.findViewById(R.id.name);
-            countTextView = itemView.findViewById(R.id.numWP);
-            createdTextView = itemView.findViewById(R.id.date);
         }
 
         public void bind(final HashMap<String, String> theTrial, final OnItemClickListener listener) {
@@ -85,7 +82,6 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
                     String id = theTrial.get("id").toString();
                     Context context = v.getContext();
                     ((TrackListActivity) context).onClickCalled(id);
-
                 }
             });
         }
