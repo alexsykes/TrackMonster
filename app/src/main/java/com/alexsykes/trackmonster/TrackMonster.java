@@ -66,11 +66,12 @@ public class TrackMonster extends Application {
                 + TrackContract.TrackEntry.COLUMN_TRACKS_NAME + " TEXT NOT NULL, "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION + " TEXT,  "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE + " INTEGER DEFAULT 1,  "
-                + TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT + " INTEGER DEFAULT 1,  "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_CREATED + " TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_UPDATED  + " TEXT );";
 
         db.execSQL(SQL_CREATE_TRACK_TABLE);
+
+      //  trackDbHelper.insertFirstTrack("1", "Unnamed track");
     }
     protected boolean canConnect() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

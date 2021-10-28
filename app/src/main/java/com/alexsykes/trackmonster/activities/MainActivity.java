@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity
         double bearing = location.getBearing();
         double alt = location.getAltitude();
 
-        waypointDbHelper.addLocation(lat, lng, speed, bearing, alt, trackid);
+        waypointDbHelper.addLocation(lat, lng, speed, bearing, alt);
 
         logentry = "Status:\nLat: " + lat + "\nLng: " + lng + "\nSpeed: " + speed + "\nBearing: " + bearing;
         Log.i("Info", logentry);
@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity
 
         useGPSonly = prefs.getBoolean("useGPSonly", false);
         trackingOn = prefs.getBoolean("trackingOn", false);
-        trackid = prefs.getInt("trackid", -999);
+        trackid = prefs.getInt("trackid", 1);
         updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
         requestingLocationUpdates = !useGPSonly;
     }

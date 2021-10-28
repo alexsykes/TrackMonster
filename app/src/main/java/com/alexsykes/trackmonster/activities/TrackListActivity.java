@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
@@ -25,6 +26,7 @@ public class TrackListActivity extends AppCompatActivity {
     ArrayList<HashMap<String, String>> theTrackList;
     RecyclerView trackView;
     private static final int TEXT_REQUEST = 1;
+    private static final String TAG = "Info";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,26 +41,24 @@ public class TrackListActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), TrackDialogActivity.class);
-                intent.putExtra("task", "insert");
+                intent.putExtra("task", "new");
                 startActivity(intent);
             }
         });
 
-    }private void showAddItemDialog(Context c) {
-        final EditText taskEditText = new EditText(c);
-        AlertDialog dialog = new AlertDialog.Builder(c)
-                .setTitle("Add a new task")
-                .setMessage("What do you want to do next?")
-                .setView(taskEditText)
-                .setPositiveButton("Add", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String task = String.valueOf(taskEditText.getText());
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .create();
-        dialog.show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "TrackListActivity: onResume: ");
+        populateTrackList();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i(TAG, "TrackListActivity: onStart: ");
     }
 
     public void onClickCalled(String trackid) {

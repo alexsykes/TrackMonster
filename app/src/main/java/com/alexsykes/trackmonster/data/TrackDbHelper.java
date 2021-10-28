@@ -3,12 +3,14 @@ package com.alexsykes.trackmonster.data;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.preference.PreferenceManager;
 
 import com.alexsykes.trackmonster.data.TrackContract;
 import com.alexsykes.trackmonster.data.WaypointContract;
@@ -19,9 +21,12 @@ import java.util.HashMap;
 public class TrackDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "monster.db";
     private static final int DATABASE_VERSION = 1;
+    private int trackid;
 
     public TrackDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        trackid = prefs.getInt("trackid", 1);
     }
 
     public void addRandomTrack() {
@@ -45,7 +50,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
         theTrack.put("id", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry._ID)));
         theTrack.put("description", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION)));
-        theTrack.put("isCurrent", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT)));
         theTrack.put("isVisible", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)));
         theTrack.put("name", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME)));
         cursor.close();
@@ -80,7 +84,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ArrayList<HashMap<String, String>> theTrackList = new ArrayList<>();
 
-        String query = "SELECT _id , name ,  isVisible, isCurrent FROM tracks  ORDER BY _id ASC";
+        String query = "SELECT _id , name, isVisible FROM tracks  ORDER BY _id ASC";
 
         // query = "SELECT * FROM tracks";
         Cursor cursor = db.rawQuery(query, null);
@@ -89,7 +93,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             tracks.put("id",cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry._ID)));
             tracks.put("name", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME)));
             tracks.put("isVisible", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)));
-            tracks.put("isCurrent", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT)));
             theTrackList.add(tracks);
         }
         cursor.close();
@@ -103,7 +106,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
       //  String query  "INSERT INTO " + DATABASE_NAME
     }
 
-    public void insertNewTrack(String trackID, String name, String trackDescription, boolean isVisible) {
+    public void insertNewTrack(String name, String trackDescription, boolean isVisible ) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
@@ -114,16 +117,25 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         db.insert("tracks", null, values);
     }
 
-    public void updateTrack(String trackID, String name, String trackDescription, boolean isVisible) {
+    public void insertFirstTrack(String trackID, String name ) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, name);
+        db.insert("tracks", null, values);
+    }
+
+    public void updateTrack(String trackID, String name, String trackDescription, boolean isVisible  ) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        String where = "_id=?";
+        String[] whereArgs = new String[] {String.valueOf(trackID)};
 
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, name);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, trackDescription);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE, isVisible);
         values.put(TrackContract.TrackEntry._ID, trackID);
 
-       // db.updateWithOnConflict("tracks", null, values, );
+        db.update("tracks", values, where, whereArgs);
     }
 
     @Override

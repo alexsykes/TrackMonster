@@ -16,7 +16,6 @@ public class TrackContract extends AppCompatActivity {
         public final static String COLUMN_TRACKS_NAME = "name";
         public final static String COLUMN_TRACKS_DESCRIPTION = "description";
         public final static String COLUMN_TRACKS_ISVISIBLE = "isVisible";
-        public final static String COLUMN_TRACKS_ISCURRENT = "isCurrent";
         public static final String COLUMN_TRACKS_COUNT = "count";
     }
 

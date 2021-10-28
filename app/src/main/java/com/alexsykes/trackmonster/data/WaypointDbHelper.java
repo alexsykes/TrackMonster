@@ -2,12 +2,14 @@ package com.alexsykes.trackmonster.data;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.maps.model.Marker;
 
@@ -15,9 +17,12 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "monster.db";
     private static final int DATABASE_VERSION = 1;
+    private int trackid;
 
     public WaypointDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        trackid = prefs.getInt("trackid", 1);
     }
 
     @Override
@@ -51,14 +56,14 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT, lat);
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LNG, lng);
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_NAME, name);
-            values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID, 3);
+            values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID, trackid);
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT, alt);
 
             db.insertWithOnConflict("waypoints", null, values, SQLiteDatabase.CONFLICT_REPLACE);
         }
     }
 
-    public void addLocation(double lat, double lng, double speed, double bearing, double alt, int trackid) {
+    public void addLocation(double lat, double lng, double speed, double bearing, double alt) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
