@@ -33,4 +33,8 @@
     <string name="new_track">New track</string>
     <string name="track_description">Track description</string>
     <string name="track_name">Track name</string>
+    <string name="the_name_of_the_track">The name of the track</string>
+    <string name="show_on_map">Show on map</string>
+    <string name="a_description_of_the_track">A description of the track</string>
+    <string name="track_details">Track details</string>
 </resources>

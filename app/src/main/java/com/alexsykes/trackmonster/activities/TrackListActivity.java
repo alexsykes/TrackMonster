@@ -1,6 +1,5 @@
 package com.alexsykes.trackmonster.activities;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -10,18 +9,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.alexsykes.trackmonster.R;
+import com.alexsykes.trackmonster.handlers.TrackListAdapter;
 import com.alexsykes.trackmonster.data.TrackDbHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -29,6 +24,7 @@ public class TrackListActivity extends AppCompatActivity {
     TrackDbHelper trackDbHelper;
     ArrayList<HashMap<String, String>> theTrackList;
     RecyclerView trackView;
+    private static final int TEXT_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +40,7 @@ public class TrackListActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 Intent intent = new Intent(getApplicationContext(), TrackDialogActivity.class);
-                // intent.putExtra(EXTRA_MESSAGE, message);
+
                 startActivity(intent);
             }
         });
@@ -66,6 +62,14 @@ public class TrackListActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    public void onClickCalled(String trialid) {
+        // Call another activity here and pass some arguments to it.
+        Intent intent = new Intent(this, TrackDialogActivity.class);
+        // intent.putExtra("id", trialid);
+        startActivity(intent);
+      //  startActivityForResult(intent, TEXT_REQUEST);
+    }
+
     private void populateTrackList() {
         theTrackList = trackDbHelper.getTrackList();
         trackView = findViewById(R.id.trackView);
@@ -79,83 +83,6 @@ public class TrackListActivity extends AppCompatActivity {
         TrackListAdapter adapter = new TrackListAdapter(theTrackList);
         trackView.setAdapter(adapter);
     }
-
-    public static class TrackHolder extends RecyclerView.ViewHolder {
-        TextView idTextView, nameTextView, countTextView, createdTextView;
-        public TrackHolder(@NonNull View itemView) {
-            super(itemView);
-            idTextView = itemView.findViewById(R.id.id);
-            nameTextView = itemView.findViewById(R.id.name);
-            countTextView = itemView.findViewById(R.id.numWP);
-            createdTextView = itemView.findViewById(R.id.date);
-        }
-
-        public void bind(final HashMap<String, String> theTrack, final OnItemClickListener listener) {
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String id = theTrack.get("id");
-                    Log.i("Info", "onClick: itemClicked " + id);
-                }
-            });
-        }
-    }
-
-    private class TrackListAdapter extends RecyclerView.Adapter<TrackHolder> {
-        ArrayList<HashMap<String, String>> theTrackList;
-        HashMap<String, String> theTrack;
-        OnItemClickListener listener;
-
-        public TrackListAdapter(ArrayList<HashMap<String, String>> theTrackList) {
-            this.theTrackList = theTrackList;
-        }
-
-        public TrackListAdapter(ArrayList<HashMap<String, String>> theTrackList, OnItemClickListener listener) {
-            this.theTrackList = theTrackList;
-            this.listener = listener;
-        }
-
-
-        @Override
-        public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-            super.onAttachedToRecyclerView(recyclerView);
-        }
-
-
-
-        @NonNull
-        @Override
-        public TrackHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.track_row, parent, false);
-            TrackHolder trackHolder = new TrackHolder(v);
-            return trackHolder;
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull TrackHolder holder, int position) {
-            theTrack = theTrackList.get(position);
-
-            String theCreated = theTrack.get("created");
-            SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss Z");
-            // Date date = format.parse(theCreated);
-
-            SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm:ss");
-            // String created = timeFormat.format(theCreated);
-            holder.idTextView.setText(theTrack.get("id"));
-            holder.nameTextView.setText(theTrack.get("name"));
-            holder.countTextView.setText(theTrack.get("count"));
-            holder.bind(theTrack, listener);
-           // holder.createdTextView.setText(theCreated);
-        }
-
-        @Override
-        public int getItemCount() {
-            return theTrackList.size();
-        }
-
-
-    }
-
     public interface OnItemClickListener {
         void onItemClick(HashMap<String, String> theTrackList);
     }

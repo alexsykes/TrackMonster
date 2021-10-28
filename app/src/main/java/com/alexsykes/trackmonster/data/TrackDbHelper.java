@@ -44,7 +44,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ArrayList<HashMap<String, String>> theTrackList = new ArrayList<>();
 
-        String query = "SELECT t._id AS id, t.name AS name, t.created AS created, COUNT(w._id) AS count FROM tracks t LEFT JOIN waypoints w ON id = w.trackid " +
+        String query = "SELECT t._id AS id, t.name AS name, t.created AS created, COUNT(w._id) AS count, t.isVisible AS isVisible FROM tracks t LEFT JOIN waypoints w ON id = w.trackid " +
                 "GROUP BY w.trackid ORDER BY t._id ASC";
 
         // query = "SELECT * FROM tracks";
@@ -55,6 +55,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             tracks.put("name", cursor.getString(1));
             tracks.put("created", cursor.getString(2));
             tracks.put("count", cursor.getString(3));
+            tracks.put("isVisible", cursor.getString(4));
             theTrackList.add(tracks);
         }
         cursor.close();

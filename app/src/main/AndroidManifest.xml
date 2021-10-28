@@ -17,6 +17,7 @@
         <activity
             android:name=".activities.TrackDialogActivity"
             android:parentActivityName=".activities.TrackListActivity"
+            android:label="@string/track_details"
             android:exported="false" />
         <activity
             android:name=".activities.TrackListActivity"
