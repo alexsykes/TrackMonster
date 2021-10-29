@@ -30,10 +30,12 @@ public class TrackDialogActivity extends AppCompatActivity {
     String trackDescription;
     boolean isVisible, isCurrent;
     String trackID;
+    String trackIdPrefs;
     TrackDbHelper trackDbHelper;
     Intent intent;
     Bundle extras;
     HashMap<String, String> theTrack;
+    SharedPreferences prefs ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,9 @@ public class TrackDialogActivity extends AppCompatActivity {
         trackID = intent.getExtras().getString("trackid","1");
         task = intent.getExtras().getString("task");
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        trackIdPrefs = String.valueOf(prefs.getInt("trackid", 1));
+
         // Get existing track details and show values
         if (task.equals("update")) {
             theTrack = trackDbHelper.getTrackData(trackID);
@@ -59,20 +64,19 @@ public class TrackDialogActivity extends AppCompatActivity {
             nameTextInputLayout.getEditText().setText(theTrack.get("name"));
             descriptionTextInputLayout.getEditText().setText(theTrack.get("description"));
 
-//            if ((theTrack.get("isCurrent")).equals("1")) {
-//                isCurrent = true;
-//            } else {
-//                isCurrent = false;
-//            }
+            if (theTrack.get("id").equals(trackIdPrefs)) {
+                isCurrent = true;
+            } else {
+                isCurrent = false;
+            }
 
             if ((theTrack.get("isVisible")).equals("1")) {
                 isVisible = true;
             } else {
                 isVisible = false;
             }
-
-         //   isCurrentCheckBox.setChecked(isCurrent);
             isVisibleCheckBox.setChecked(isVisible);
+            isCurrentCheckBox.setChecked(isCurrent);
         }
     }
 
@@ -95,7 +99,6 @@ public class TrackDialogActivity extends AppCompatActivity {
     }
 
     private void saveTrackDetails() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             SharedPreferences.Editor editor = prefs.edit();
 
 
