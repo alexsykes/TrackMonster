@@ -24,21 +24,12 @@ public class TrackMonster extends Application {
         super.onCreate();
         Log.i("Info", "TrackMonster class: OnAppStart");
 
+        waypointDbHelper = new WaypointDbHelper(this);
+        trackDbHelper = new TrackDbHelper(this);
 
         // Create database connection
         dbInit();
-        waypointDbHelper = new WaypointDbHelper(this);
-        trackDbHelper = new TrackDbHelper(this);
-        // waypointDbHelper.generateRandomData(230);
-        // trackDbHelper.addRandomTrack();
 
-        // Check for connectivity
-        canConnect = canConnect();
-
-        // if online, load saved data
-        if (canConnect) {
-
-        }
     }
 
     private void dbInit() {
@@ -71,7 +62,7 @@ public class TrackMonster extends Application {
 
         db.execSQL(SQL_CREATE_TRACK_TABLE);
 
-      //  trackDbHelper.insertFirstTrack("1", "Unnamed track");
+        trackDbHelper.insertFirstTrack("1", "Unnamed track");
     }
     protected boolean canConnect() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

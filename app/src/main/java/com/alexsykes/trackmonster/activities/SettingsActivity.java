@@ -46,10 +46,10 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void setup() {
-            useGPSonly = prefs.getBoolean("useGPSonly", true);
+            // useGPSonly = prefs.getBoolean("useGPSonly", true);
             trackingOn = prefs.getBoolean("trackingOn", true);
 
-            SwitchPreference useGPSPref = findPreference("useGPSonly");
+/*            SwitchPreference useGPSPref = findPreference("useGPSonly");
             assert useGPSPref != null;
 
             useGPSPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -59,7 +59,7 @@ public class SettingsActivity extends AppCompatActivity {
                     useGPSPref.setChecked(useGPSonly);
                     return false;
                 }
-            });
+            });*/
 
             SwitchPreference trackingOnPref = findPreference("trackingOn");
             assert trackingOnPref != null;

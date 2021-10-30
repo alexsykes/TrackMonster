@@ -14,6 +14,7 @@ import androidx.preference.PreferenceManager;
 
 import com.alexsykes.trackmonster.data.TrackContract;
 import com.alexsykes.trackmonster.data.WaypointContract;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,14 +30,14 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         trackid = prefs.getInt("trackid", 1);
     }
 
-    public void addRandomTrack() {
+/*    public void addRandomTrack() {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, "Third data track");
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, "A description of yet another track");
         db.insert("tracks", null, values);
-    }
+    }*/
 
     @SuppressLint("Range")
     public HashMap<String, String> getTrackData(String trackid) {
@@ -119,9 +120,14 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
     public void insertFirstTrack(String trackID, String name ) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
+/*        ContentValues values = new ContentValues();
+        trackid = Integer.valueOf(trackID);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, name);
-        db.insert("tracks", null, values);
+        values.put(TrackContract.TrackEntry._ID, trackid);
+        db.insert("tracks", null, values);*/
+
+        String query = "INSERT  OR IGNORE INTO tracks  (_id, name) VALUES ('1','"+name+"')";
+        db.execSQL(query);
     }
 
     public void updateTrack(String trackID, String name, String trackDescription, boolean isVisible  ) {

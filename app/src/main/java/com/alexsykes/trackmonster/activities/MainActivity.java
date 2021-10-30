@@ -46,6 +46,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
+
 // See https://developers.google.com/maps/documentation/android-sdk/map-with-marker
 // https://developers.google.com/maps/documentation/android-sdk/map
 // https://developer.android.com/training/location/retrieve-current
@@ -142,8 +144,11 @@ public class MainActivity extends AppCompatActivity
 
         waypointDbHelper.addLocation(lat, lng, speed, bearing, alt);
 
+        LatLng latLng = new LatLng(lat, lng);
+        map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
         logentry = "Status:\nLat: " + lat + "\nLng: " + lng + "\nSpeed: " + speed + "\nBearing: " + bearing;
-        Log.i("Info", logentry);
+        Log.i("Status", logentry);
 
         // TODO updateCamera
         // updateMap(location);
@@ -286,6 +291,15 @@ public class MainActivity extends AppCompatActivity
             map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
         getDeviceLastLocation();
+
+       showCurrentTrack(trackid);
+    }
+
+    private void showCurrentTrack(int trackid) {
+        waypointDbHelper = new WaypointDbHelper(this);
+        trackid = 1;
+        ArrayList<LatLng> currentTracks = new ArrayList<LatLng>();
+        currentTracks = waypointDbHelper.getTrackPoints(trackid);
     }
 
     @Override
@@ -387,7 +401,7 @@ public class MainActivity extends AppCompatActivity
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        Log.i(TAG, "startLocationUpdates: ");
+        Log.i(TAG, "stopLocationUpdates: ");
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 

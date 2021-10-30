@@ -19,10 +19,10 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="Track settings">
 
-        <SwitchPreference
-            android:defaultValue="true"
+<!--        <SwitchPreference
+            android:defaultValue="false"
             android:key="useGPSonly"
-            android:title="GPS only" />
+            android:title="GPS only" />-->
         <SwitchPreference
             android:defaultValue="true"
             android:key="trackingOn"

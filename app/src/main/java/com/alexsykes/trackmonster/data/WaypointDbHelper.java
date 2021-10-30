@@ -3,6 +3,7 @@ package com.alexsykes.trackmonster.data;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -11,7 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+
+import java.util.ArrayList;
 
 public class WaypointDbHelper extends SQLiteOpenHelper {
 
@@ -74,5 +78,23 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
         values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT, alt);
 
         db.insert("waypoints", null, values);
+    }
+
+
+
+    public ArrayList<LatLng> getTrackPoints(int trackID){
+        ArrayList<LatLng> theWaypoints = new ArrayList<LatLng>();
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT lat, lng FROM waypoints WHERE trackid = '" + trackID + "' ORDER BY _id ASC";
+
+
+        Cursor result = db.rawQuery(query, null);
+       // result.moveToFirst();
+        while (result.moveToNext()) {
+            theWaypoints.add(new LatLng(result.getDouble(0), result.getDouble(1)));
+           // result.moveToNext();
+        }
+        return theWaypoints;
     }
 }
