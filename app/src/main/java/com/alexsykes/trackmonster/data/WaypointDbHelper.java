@@ -90,11 +90,11 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
 
 
         Cursor result = db.rawQuery(query, null);
-       // result.moveToFirst();
         while (result.moveToNext()) {
             theWaypoints.add(new LatLng(result.getDouble(0), result.getDouble(1)));
-           // result.moveToNext();
         }
+
+        result.close();
         return theWaypoints;
     }
 }

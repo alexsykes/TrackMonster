@@ -151,4 +151,33 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
+
+    public ArrayList<ArrayList<LatLng>> getAllTrackPoints() {
+        ArrayList<ArrayList<LatLng>> allTrackData = new ArrayList<ArrayList<LatLng>>();
+
+        ArrayList<Integer> theTrackIndices = new ArrayList<Integer>();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query = "SELECT _id  FROM tracks WHERE isVisible = true ORDER BY _id ASC";
+        Cursor cursor = db.rawQuery(query, null);
+        while (cursor.moveToNext()) {
+            theTrackIndices.add(cursor.getInt(0));
+        }
+        cursor.close();
+
+        int count = theTrackIndices.size();
+        int index;
+
+        for(int i = 0; i<count; i++){        ArrayList<LatLng> theTrackData = new ArrayList<LatLng>();
+            index = theTrackIndices.get(i);
+            query = "SELECT lat, lng  FROM waypoints WHERE trackid = " + index + " ORDER BY _id ASC";
+
+            Cursor theWaypoints = db.rawQuery(query,null);
+            while(theWaypoints.moveToNext()) {
+                theTrackData.add(new LatLng(theWaypoints.getDouble(0), theWaypoints.getDouble(1)));
+            }
+            allTrackData.add(theTrackData);
+        }
+        return allTrackData;
+    }
 }

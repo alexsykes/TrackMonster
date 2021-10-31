@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getPrefs();
         statusLine = findViewById(R.id.statusLine);
         mLayout = findViewById(R.id.map);
         // Construct a FusedLocationProviderClient.
@@ -126,7 +127,6 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        getPrefs();
         if (!useGPSonly) {
             //    fusedLocationProviderClient = new FusedLocationProviderClient(this);
             //    setUpLocation();
@@ -292,16 +292,21 @@ public class MainActivity extends AppCompatActivity
         }
         getDeviceLastLocation();
 
-       showCurrentTrack(trackid);
+        // showCurrentTrack();
+        showAllVisibleTracks();
     }
 
-    private void showCurrentTrack(int trackid) {
+    private void showCurrentTrack() {
         waypointDbHelper = new WaypointDbHelper(this);
-        trackid = 1;
         ArrayList<LatLng> currentTracks = new ArrayList<LatLng>();
         currentTracks = waypointDbHelper.getTrackPoints(trackid);
     }
 
+    private void showAllVisibleTracks() {
+        trackDbHelper = new TrackDbHelper(this);
+        ArrayList<ArrayList<LatLng>> theTrackData = new ArrayList<ArrayList<LatLng>>();
+        theTrackData = trackDbHelper.getAllTrackPoints();
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
