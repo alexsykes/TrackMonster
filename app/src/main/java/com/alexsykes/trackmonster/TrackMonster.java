@@ -61,7 +61,7 @@ public class TrackMonster extends Application {
 
         db.execSQL(SQL_CREATE_TRACK_TABLE);
 
-        trackDbHelper.insertFirstTrack("1", "Unnamed track");
+        trackDbHelper.insertFirstTrack("1", "Track 1");
     }
     protected boolean canConnect() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

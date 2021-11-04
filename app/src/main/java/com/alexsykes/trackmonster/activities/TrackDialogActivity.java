@@ -92,6 +92,7 @@ public class TrackDialogActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.done_menu_item:
                 saveTrackDetails();
+                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

@@ -314,10 +314,10 @@ public class MainActivity extends AppCompatActivity
 
         map.addPolyline(polylineOptions);
 
-        LatLngBounds latLngBounds = calcBounds(currentTrack);
+       // LatLngBounds latLngBounds = calcBounds(currentTrack);
         Log.i(TAG, "moveCamera: ");
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(21.5838, 39.2177), 3));
-        map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,1000, 1000, 3));
+     //   map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(21.5838, 39.2177), 3));
+     //   map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,1000, 1000, 3));
     }
 
     private LatLngBounds calcBounds(ArrayList<LatLng> track){

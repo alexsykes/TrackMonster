@@ -1,6 +1,8 @@
 package com.alexsykes.trackmonster.handlers;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.alexsykes.trackmonster.R;
@@ -21,6 +24,8 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     ArrayList<HashMap<String, String>> theTrackList;
     HashMap<String, String> theTrack;
     OnItemClickListener listener;
+    SharedPreferences preferences;
+    int trackid;
 
     public interface OnItemClickListener {
         void onItemClick(HashMap<String, String> theTrack);
@@ -43,6 +48,8 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     @NonNull
     @Override
     public TrackHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+        preferences  = PreferenceManager.getDefaultSharedPreferences(viewGroup.getContext());
+        trackid = preferences.getInt("trackid", 1);
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.track_row, viewGroup, false);
         TrackHolder trackHolder = new TrackHolder(v);
         return trackHolder;
@@ -51,7 +58,9 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     @Override
     public void onBindViewHolder(@NonNull TrackHolder holder, int position) {
         theTrack = theTrackList.get(position);
-
+        if(trackid == Integer.valueOf(theTrack.get("id"))) {
+            holder.itemView.setBackgroundResource(R.color.list_highlist);
+        }
       //  holder.idTextView.setText(theTrack.get("id"));
         // holder.createdTextView.setText(theCreated);
         //  holder.isVisibleView.setImage("@drawable/ic_baseline_add_circle_24");
