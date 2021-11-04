@@ -128,6 +128,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
         String query = "INSERT  OR IGNORE INTO tracks  (_id, name) VALUES ('1','"+name+"')";
         db.execSQL(query);
+        db.close();
     }
 
     public void updateTrack(String trackID, String name, String trackDescription, boolean isVisible  ) {
@@ -142,6 +143,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         values.put(TrackContract.TrackEntry._ID, trackID);
 
         db.update("tracks", values, where, whereArgs);
+        db.close();
     }
 
     @Override

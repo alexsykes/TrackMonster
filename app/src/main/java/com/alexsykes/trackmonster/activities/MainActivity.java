@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import com.alexsykes.trackmonster.R;
 import com.alexsykes.trackmonster.data.TrackDbHelper;
+import com.alexsykes.trackmonster.data.Waypoint;
 import com.alexsykes.trackmonster.data.WaypointDbHelper;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity
     private LocationRequest locationRequest;
     private TrackDbHelper trackDbHelper;
     private WaypointDbHelper waypointDbHelper;
+    private ArrayList<LatLng> currentTrack;
 
     // Lifecycle starts
     @Override
@@ -122,7 +124,7 @@ public class MainActivity extends AppCompatActivity
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
-                     processNewLocation(location);
+                    processNewLocation(location);
                 }
             }
         };
@@ -131,10 +133,6 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        if (!useGPSonly) {
-            //    fusedLocationProviderClient = new FusedLocationProviderClient(this);
-            //    setUpLocation();
-        }
     }
 
     private void processNewLocation(Location location) {
@@ -294,30 +292,28 @@ public class MainActivity extends AppCompatActivity
         if (cameraPosition != null) {
             map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
-       getDeviceLastLocation();
-        showCurrentTrack();
-       // showAllVisibleTracks();
+        getDeviceLastLocation();
+
+        waypointDbHelper = new WaypointDbHelper(this);
+        currentTrack = waypointDbHelper.getTrackPoints(trackid);
+        if(currentTrack.size() > 0) {
+            LatLngBounds latLngBounds = showCurrentTrack(currentTrack);
+            map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,1000, 1000, 3));
+        }
     }
 
-    private void showCurrentTrack() {
-        waypointDbHelper = new WaypointDbHelper(this);
-        ArrayList<LatLng> currentTrack = new ArrayList<LatLng>();
-        currentTrack = waypointDbHelper.getTrackPoints(trackid);
-
+    private LatLngBounds showCurrentTrack(ArrayList<LatLng> currentTrack) {
         PolylineOptions polylineOptions = new PolylineOptions();
-
-// Create polyline options with existing LatLng ArrayList
+        // Create polyline options with existing LatLng ArrayList
         polylineOptions.addAll(currentTrack);
         polylineOptions
                 .width(5)
-                .color(Color.RED);
+                .color(Color.BLUE);
 
         map.addPolyline(polylineOptions);
 
-       // LatLngBounds latLngBounds = calcBounds(currentTrack);
-        Log.i(TAG, "moveCamera: ");
-     //   map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(21.5838, 39.2177), 3));
-     //   map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,1000, 1000, 3));
+         LatLngBounds latLngBounds = calcBounds(currentTrack);
+        return latLngBounds;
     }
 
     private LatLngBounds calcBounds(ArrayList<LatLng> track){
@@ -326,7 +322,7 @@ public class MainActivity extends AppCompatActivity
         double east = -180;
         double west = 180;
 
-       // LatLng latLng = new LatLng(0,0);
+        // LatLng latLng = new LatLng(0,0);
 
         for (LatLng latLng : track){
             if(latLng.latitude > north) { north = latLng.latitude; }
@@ -492,7 +488,7 @@ public class MainActivity extends AppCompatActivity
                             lastKnownLocation = task.getResult();
                             Log.i(TAG, "getDeviceLastLocation: onComplete: lastKnownLocation");
                             if (lastKnownLocation != null) {
-                            //    map.moveCamera(CameraUpdateFactory.newLatLngZoom( new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                                //    map.moveCamera(CameraUpdateFactory.newLatLngZoom( new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
                             }
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");

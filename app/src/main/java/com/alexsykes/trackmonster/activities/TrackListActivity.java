@@ -34,7 +34,7 @@ public class TrackListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_track_list);
 
         trackDbHelper = new TrackDbHelper(this);
-        populateTrackList();
+       // populateTrackList();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -47,17 +47,17 @@ public class TrackListActivity extends AppCompatActivity {
         });
 
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(TAG, "TrackListActivity: onResume: ");
-        populateTrackList();
-    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        Log.i(TAG, "TrackListActivity: onResume: ");
+//    }
 
     @Override
     protected void onStart() {
         super.onStart();
+        populateTrackList();
         Log.i(TAG, "TrackListActivity: onStart: ");
     }
 

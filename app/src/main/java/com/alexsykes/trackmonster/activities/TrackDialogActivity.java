@@ -12,6 +12,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.TextView;
 
 import com.alexsykes.trackmonster.R;
 import com.alexsykes.trackmonster.data.TrackDbHelper;
@@ -81,28 +83,33 @@ public class TrackDialogActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.track_dialog_menu, menu);
-        return true;
+    protected void onDestroy() {
+        super.onDestroy();
+        saveTrackDetails();
+        Log.i(TAG, "onDestroy");
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.done_menu_item:
-                saveTrackDetails();
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.track_dialog_menu, menu);
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+//        switch (item.getItemId()) {
+//            case R.id.done_menu_item:
+//                saveTrackDetails();
+//                finish();
+//                return true;
+//            default:
+//                return super.onOptionsItemSelected(item);
+//        }
+//    }
 
     private void saveTrackDetails() {
-            SharedPreferences.Editor editor = prefs.edit();
-
-
+        SharedPreferences.Editor editor = prefs.edit();
         name = nameTextInputLayout.getEditText().getText().toString();
         trackDescription = descriptionTextInputLayout.getEditText().getText().toString();
         isVisible = isVisibleCheckBox.isChecked();
