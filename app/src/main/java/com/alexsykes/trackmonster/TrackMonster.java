@@ -13,8 +13,6 @@ import com.alexsykes.trackmonster.data.WaypointContract;
 import com.alexsykes.trackmonster.data.WaypointDbHelper;
 
 public class TrackMonster extends Application {
-    boolean canConnect;
-    int trackid = 123;
 
     // Databases
     private WaypointDbHelper waypointDbHelper;
@@ -26,6 +24,7 @@ public class TrackMonster extends Application {
 
         waypointDbHelper = new WaypointDbHelper(this);
         trackDbHelper = new TrackDbHelper(this);
+     //   waypointDbHelper.generateRandomData(30);
 
         // Create database connection
         dbInit();
