@@ -15,6 +15,7 @@ import androidx.preference.PreferenceManager;
 import com.alexsykes.trackmonster.data.TrackContract;
 import com.alexsykes.trackmonster.data.WaypointContract;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,13 +43,13 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     @SuppressLint("Range")
     public HashMap<String, String> getTrackData(String trackid) {
         SQLiteDatabase db = this.getWritableDatabase();
-        HashMap<String, String> theTrack = new HashMap<String, String>();
 
         String query = "SELECT * FROM tracks WHERE _id = " + trackid;
         Log.i("Info", query);
         Cursor cursor = db.rawQuery(query, null);
 
         cursor.moveToFirst();
+        HashMap<String, String> theTrack = new HashMap<String, String>();
         theTrack.put("id", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry._ID)));
         theTrack.put("description", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION)));
         theTrack.put("isVisible", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)));
@@ -58,13 +59,13 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     }
     public ArrayList<HashMap<String, String>> getTrackList() {
         SQLiteDatabase db = this.getWritableDatabase();
-        ArrayList<HashMap<String, String>> theTrackList = new ArrayList<>();
 
         String query = "SELECT t._id AS id, t.name AS name, t.created AS created, COUNT(w._id) AS count, t.isVisible AS isVisible FROM tracks t LEFT JOIN waypoints w ON id = w.trackid " +
                 "GROUP BY w.trackid ORDER BY t._id ASC";
 
         // query = "SELECT * FROM tracks";
         Cursor cursor = db.rawQuery(query, null);
+        ArrayList<HashMap<String, String>> theTrackList = new ArrayList<>();
         while (cursor.moveToNext()) {
             HashMap<String, String> tracks = new HashMap<>();
             tracks.put("id", cursor.getString(0));
@@ -79,16 +80,82 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     }
 
 
+    @SuppressLint("Range")
+    public TrackData getTrackData(int trackid){
+        // Declare fields
+
+        // Get database and return data
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Get track data
+        String trackQuery = "SELECT * FROM tracks WHERE _id = " + trackid + " ORDER BY _id ASC";
+        Cursor cursor = db.rawQuery(trackQuery, null);
+        int count = cursor.getCount();
+
+        String description = "";
+        String name = "";
+        if(count>0) {
+            cursor.moveToFirst();
+            name = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME));
+            description = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION));
+        }
+
+        // Get waypoint data
+        String waypointQuery = "SELECT * FROM waypoints WHERE trackid = " + trackid + " ORDER BY _id ASC";
+        cursor = db.rawQuery(waypointQuery, null);
+
+        // Check for valid data
+        count = cursor.getCount();
+        double westmost = 0;
+        double eastmost = 0;
+        double southmost = 0;
+        double northmost = 0;
+        LatLngBounds latLngBounds;
+        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+        if(count > 0){
+            cursor.moveToFirst();
+            // Get initial values
+            westmost = cursor.getDouble(cursor.getColumnIndex(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LNG));
+            eastmost = cursor.getDouble(cursor.getColumnIndex(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LNG));
+            northmost = cursor.getDouble(cursor.getColumnIndex(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT));
+            southmost = cursor.getDouble(cursor.getColumnIndex(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT));
+
+            latLngs.add((new LatLng(northmost,westmost)));
+
+            while (cursor.moveToNext()) {
+                // Compare map extremes
+                double lng = cursor.getDouble(cursor.getColumnIndex(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LNG));
+                double lat = cursor.getDouble(cursor.getColumnIndex(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT));
+
+                // Add LatLng to Arraylist
+                latLngs.add(new LatLng(lat,lng));
+
+                if(lat > northmost) { northmost = lat; };
+                if(lat < southmost) { southmost = lat; };
+                if(lng > eastmost) { eastmost = lng; };
+                if(lng < westmost) { westmost = lng; };
+            }
+            cursor.close();
+        }
+
+        LatLng northeast = new LatLng(northmost, eastmost);
+        LatLng southwest = new LatLng(southmost, westmost);
+        latLngBounds = new LatLngBounds(southwest, northeast);
+
+        int _id = trackid;
+        TrackData trackData = new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds);
+        return new TrackData();
+    }
 
     @SuppressLint("Range")
     public ArrayList<HashMap<String, String>> getShortTrackList() {
         SQLiteDatabase db = this.getWritableDatabase();
-        ArrayList<HashMap<String, String>> theTrackList = new ArrayList<>();
 
         String query = "SELECT _id , name, isVisible FROM tracks  ORDER BY _id ASC";
 
         // query = "SELECT * FROM tracks";
         Cursor cursor = db.rawQuery(query, null);
+        ArrayList<HashMap<String, String>> theTrackList = new ArrayList<>();
         while (cursor.moveToNext()) {
             HashMap<String, String> tracks = new HashMap<>();
             tracks.put("id",cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry._ID)));
@@ -100,11 +167,10 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         return theTrackList;
     }
 
-
     public void addEntry(String name, String description) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-      //  String query  "INSERT INTO " + DATABASE_NAME
+        //  String query  "INSERT INTO " + DATABASE_NAME
     }
 
     public void insertNewTrack(String name, String trackDescription, boolean isVisible ) {
@@ -134,14 +200,14 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     public void updateTrack(String trackID, String name, String trackDescription, boolean isVisible  ) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        String where = "_id=?";
-        String[] whereArgs = new String[] {String.valueOf(trackID)};
 
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, name);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, trackDescription);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE, isVisible);
         values.put(TrackContract.TrackEntry._ID, trackID);
 
+        String[] whereArgs = new String[]{String.valueOf(trackID)};
+        String where = "_id=?";
         db.update("tracks", values, where, whereArgs);
         db.close();
     }
@@ -155,26 +221,26 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<ArrayList<LatLng>> getAllTrackPoints() {
-        ArrayList<ArrayList<LatLng>> allTrackData = new ArrayList<ArrayList<LatLng>>();
 
-        ArrayList<Integer> theTrackIndices = new ArrayList<Integer>();
         SQLiteDatabase db = this.getWritableDatabase();
 
         String query = "SELECT _id  FROM tracks WHERE isVisible = true ORDER BY _id ASC";
         Cursor cursor = db.rawQuery(query, null);
+        ArrayList<Integer> theTrackIndices = new ArrayList<Integer>();
         while (cursor.moveToNext()) {
             theTrackIndices.add(cursor.getInt(0));
         }
         cursor.close();
 
         int count = theTrackIndices.size();
-        int index;
 
-        for(int i = 0; i<count; i++){        ArrayList<LatLng> theTrackData = new ArrayList<LatLng>();
-            index = theTrackIndices.get(i);
+        ArrayList<ArrayList<LatLng>> allTrackData = new ArrayList<ArrayList<LatLng>>();
+        for(int i = 0; i<count; i++){
+            int index = theTrackIndices.get(i);
             query = "SELECT lat, lng  FROM waypoints WHERE trackid = " + index + " ORDER BY _id ASC";
 
             Cursor theWaypoints = db.rawQuery(query,null);
+            ArrayList<LatLng> theTrackData = new ArrayList<LatLng>();
             while(theWaypoints.moveToNext()) {
                 theTrackData.add(new LatLng(theWaypoints.getDouble(0), theWaypoints.getDouble(1)));
             }

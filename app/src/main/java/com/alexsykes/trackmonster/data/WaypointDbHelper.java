@@ -42,15 +42,17 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
     public void generateRandomData(int itemCount){
         SQLiteDatabase db = this.getWritableDatabase();
         String name;
-        double lat = (0.5 - Math.random()) * 30;
-        double lng = (0.5 - Math.random()) * 30;
-        double alt = Math.random() * 1000;
+//        double lat = (0.5 - Math.random()) * 15;
+//        double lng = (0.5 - Math.random()) * 15;
+        double lat = 22;
+        double lng = 40;
+        double alt;
 
 
         for(int i = 0; i < itemCount; i++) {
             name = "Waypoint " + i;
-            lat += (0.5 - Math.random()) * 10;
-            lng += (0.5 - Math.random()) * 10;
+            lat += (0.5 - Math.random());
+            lng += (0.5 - Math.random());
             alt = Math.random() * 1000;
             String data = name + "::Data - lng: "  + lng + " lat: " + lat;
             Log.i("Info", data);

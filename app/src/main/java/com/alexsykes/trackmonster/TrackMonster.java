@@ -28,7 +28,7 @@ public class TrackMonster extends Application {
 
         // Create database connection
         dbInit();
-
+        trackDbHelper.getTrackData(1);
     }
 
     private void dbInit() {
@@ -62,6 +62,7 @@ public class TrackMonster extends Application {
         db.execSQL(SQL_CREATE_TRACK_TABLE);
 
         trackDbHelper.insertFirstTrack("1", "Track 1");
+        // waypointDbHelper.generateRandomData(10);
     }
     protected boolean canConnect() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
