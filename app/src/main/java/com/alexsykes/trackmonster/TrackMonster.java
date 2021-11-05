@@ -24,11 +24,9 @@ public class TrackMonster extends Application {
 
         waypointDbHelper = new WaypointDbHelper(this);
         trackDbHelper = new TrackDbHelper(this);
-     //   waypointDbHelper.generateRandomData(30);
-
         // Create database connection
         dbInit();
-        trackDbHelper.getTrackData(1);
+        trackDbHelper.insertFirstTrack("1", "Saudi test run");
     }
 
     private void dbInit() {
@@ -55,14 +53,12 @@ public class TrackMonster extends Application {
                 + TrackContract.TrackEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_NAME + " TEXT NOT NULL, "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION + " TEXT,  "
-                + TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE + " INTEGER DEFAULT 1,  "
+                + TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE + " INTEGER , "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_CREATED + " TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_UPDATED  + " TEXT );";
 
         db.execSQL(SQL_CREATE_TRACK_TABLE);
-
-        trackDbHelper.insertFirstTrack("1", "Track 1");
-        // waypointDbHelper.generateRandomData(10);
+    //   waypointDbHelper.generateRandomData(20);
     }
     protected boolean canConnect() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

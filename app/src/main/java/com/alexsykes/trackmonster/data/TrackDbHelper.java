@@ -31,15 +31,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         trackid = prefs.getInt("trackid", 1);
     }
 
-/*    public void addRandomTrack() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-
-        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, "Third data track");
-        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, "A description of yet another track");
-        db.insert("tracks", null, values);
-    }*/
-
     @SuppressLint("Range")
     public HashMap<String, String> getTrackData(String trackid) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -144,7 +135,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
         int _id = trackid;
         TrackData trackData = new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds);
-        return new TrackData();
+        return trackData;
     }
 
     @SuppressLint("Range")

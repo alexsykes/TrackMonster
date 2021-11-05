@@ -29,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alexsykes.trackmonster.R;
+import com.alexsykes.trackmonster.data.TrackData;
 import com.alexsykes.trackmonster.data.TrackDbHelper;
 import com.alexsykes.trackmonster.data.Waypoint;
 import com.alexsykes.trackmonster.data.WaypointDbHelper;
@@ -294,12 +295,19 @@ public class MainActivity extends AppCompatActivity
         }
         getDeviceLastLocation();
 
+
+        // Replace this
         waypointDbHelper = new WaypointDbHelper(this);
         currentTrack = waypointDbHelper.getTrackPoints(trackid);
         if(currentTrack.size() > 0) {
             LatLngBounds latLngBounds = showCurrentTrack(currentTrack);
             map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,1000, 1000, 3));
         }
+        // With this
+        trackDbHelper = new TrackDbHelper(this);
+        displayActiveTrack();
+
+        //
     }
 
     private LatLngBounds showCurrentTrack(ArrayList<LatLng> currentTrack) {
@@ -314,6 +322,10 @@ public class MainActivity extends AppCompatActivity
 
          LatLngBounds latLngBounds = calcBounds(currentTrack);
         return latLngBounds;
+    }
+
+    private void displayActiveTrack(){
+        TrackData trackData = trackDbHelper.getTrackData(trackid);
     }
 
     private LatLngBounds calcBounds(ArrayList<LatLng> track){
@@ -335,6 +347,7 @@ public class MainActivity extends AppCompatActivity
         LatLng bottomLeft = new LatLng(south, west);
         return new LatLngBounds(bottomLeft, topRight);
     }
+    
     private void showAllVisibleTracks() {
         trackDbHelper = new TrackDbHelper(this);
         ArrayList<ArrayList<LatLng>> theTrackData = new ArrayList<ArrayList<LatLng>>();

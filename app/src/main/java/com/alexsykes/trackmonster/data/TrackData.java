@@ -19,8 +19,6 @@ public class TrackData {
         this.latLngBounds = latLngBounds;
     }
 
-
-
     private int _id;
     private int count;
     private ArrayList<LatLng> latLngs;
@@ -30,5 +28,41 @@ public class TrackData {
     private LatLngBounds latLngBounds;
 
     public TrackData() {
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public ArrayList<LatLng> getLatLngs() {
+        return latLngs;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public double getNorth() {
+        return north;
+    }
+
+    public double getSouth() {
+        return south;
+    }
+
+    public double getEast() {
+        return east;
+    }
+
+    public double getWest() {
+        return west;
+    }
+
+    public LatLngBounds getLatLngBounds() {
+        return latLngBounds;
     }
 }
