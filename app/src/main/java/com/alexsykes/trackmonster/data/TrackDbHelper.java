@@ -9,11 +9,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 
-import com.alexsykes.trackmonster.data.TrackContract;
-import com.alexsykes.trackmonster.data.WaypointContract;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
@@ -23,7 +20,7 @@ import java.util.HashMap;
 public class TrackDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "monster.db";
     private static final int DATABASE_VERSION = 1;
-    private int trackid;
+    private final int trackid;
 
     public TrackDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -119,12 +116,20 @@ public class TrackDbHelper extends SQLiteOpenHelper {
                 double lat = cursor.getDouble(cursor.getColumnIndex(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT));
 
                 // Add LatLng to Arraylist
-                latLngs.add(new LatLng(lat,lng));
+                latLngs.add(new LatLng(lat, lng));
 
-                if(lat > northmost) { northmost = lat; };
-                if(lat < southmost) { southmost = lat; };
-                if(lng > eastmost) { eastmost = lng; };
-                if(lng < westmost) { westmost = lng; };
+                if (lat > northmost) {
+                    northmost = lat;
+                }
+                if (lat < southmost) {
+                    southmost = lat;
+                }
+                if (lng > eastmost) {
+                    eastmost = lng;
+                }
+                if (lng < westmost) {
+                    westmost = lng;
+                }
             }
             cursor.close();
         }
@@ -164,25 +169,30 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         //  String query  "INSERT INTO " + DATABASE_NAME
     }
 
-    public void insertNewTrack(String name, String trackDescription, boolean isVisible ) {
+    public int insertNewTrack(boolean isCurrent, String name, String trackDescription, boolean isVisible) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
+        int last = 0;
 
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, name);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, trackDescription);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE, isVisible);
 
         db.insert("tracks", null, values);
+
+        if (isCurrent) {
+            String sql = "SELECT last_insert_rowid()";
+            Cursor result = db.rawQuery(sql, null);
+            result.moveToFirst();
+            last = result.getInt(0);
+
+        }
+        db.close();
+        return last;
     }
 
     public void insertFirstTrack(String trackID, String name ) {
         SQLiteDatabase db = this.getWritableDatabase();
-/*        ContentValues values = new ContentValues();
-        trackid = Integer.valueOf(trackID);
-        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, name);
-        values.put(TrackContract.TrackEntry._ID, trackid);
-        db.insert("tracks", null, values);*/
-
         String query = "INSERT  OR IGNORE INTO tracks  (_id, name, isvisible ) VALUES ('1','"+name+"', true)";
         db.execSQL(query);
         db.close();

@@ -1,19 +1,13 @@
 package com.alexsykes.trackmonster.activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.alexsykes.trackmonster.R;
 import com.alexsykes.trackmonster.data.TrackDbHelper;
@@ -66,17 +60,9 @@ public class TrackDialogActivity extends AppCompatActivity {
             nameTextInputLayout.getEditText().setText(theTrack.get("name"));
             descriptionTextInputLayout.getEditText().setText(theTrack.get("description"));
 
-            if (theTrack.get("id").equals(trackIdPrefs)) {
-                isCurrent = true;
-            } else {
-                isCurrent = false;
-            }
+            isCurrent = theTrack.get("id").equals(trackIdPrefs);
 
-            if ((theTrack.get("isVisible")).equals("1")) {
-                isVisible = true;
-            } else {
-                isVisible = false;
-            }
+            isVisible = (theTrack.get("isVisible")).equals("1");
             isVisibleCheckBox.setChecked(isVisible);
             isCurrentCheckBox.setChecked(isCurrent);
         }
@@ -88,25 +74,6 @@ public class TrackDialogActivity extends AppCompatActivity {
         saveTrackDetails();
         Log.i(TAG, "onDestroy");
     }
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.track_dialog_menu, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-//        switch (item.getItemId()) {
-//            case R.id.done_menu_item:
-//                saveTrackDetails();
-//                finish();
-//                return true;
-//            default:
-//                return super.onOptionsItemSelected(item);
-//        }
-//    }
 
     private void saveTrackDetails() {
         SharedPreferences.Editor editor = prefs.edit();
@@ -120,10 +87,17 @@ public class TrackDialogActivity extends AppCompatActivity {
             editor.apply();
         }
 
-        if(task.equals("new")) {
-            trackDbHelper.insertNewTrack(name, trackDescription, isVisible);
+        if (task.equals("new")) {
+            int lastInsert = trackDbHelper.insertNewTrack(isCurrent, name, trackDescription, isVisible);
+            trackID = String.valueOf(lastInsert);
         } else if (task.equals("update")) {
             trackDbHelper.updateTrack(trackID, name, trackDescription, isVisible);
+        }
+
+
+        if (isCurrent) {
+            editor.putInt("trackid", Integer.valueOf(trackID));
+            editor.apply();
         }
         finish();
     }
