@@ -183,7 +183,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         values.put(TrackContract.TrackEntry._ID, trackid);
         db.insert("tracks", null, values);*/
 
-        String query = "INSERT  OR IGNORE INTO tracks  (_id, name) VALUES ('1','"+name+"')";
+        String query = "INSERT  OR IGNORE INTO tracks  (_id, name, isvisible ) VALUES ('1','"+name+"', true)";
         db.execSQL(query);
         db.close();
     }

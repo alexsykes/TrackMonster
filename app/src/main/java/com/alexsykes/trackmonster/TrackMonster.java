@@ -2,10 +2,13 @@ package com.alexsykes.trackmonster;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
+
+import androidx.preference.PreferenceManager;
 
 import com.alexsykes.trackmonster.data.TrackContract;
 import com.alexsykes.trackmonster.data.TrackDbHelper;
@@ -17,16 +20,25 @@ public class TrackMonster extends Application {
     // Databases
     private WaypointDbHelper waypointDbHelper;
     private TrackDbHelper trackDbHelper;
+    SharedPreferences preferences;
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i("Info", "TrackMonster class: OnAppStart");
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean hasSampleData = preferences.getBoolean("hasRun", false);
+        if(!hasSampleData) {
+            waypointDbHelper = new WaypointDbHelper(this);
+            trackDbHelper = new TrackDbHelper(this);
+            // Create database connection
+            dbInit();
+            trackDbHelper.insertFirstTrack("1", "Saudi test run");
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putBoolean("hasRun", true);
+            editor.apply();
 
-        waypointDbHelper = new WaypointDbHelper(this);
-        trackDbHelper = new TrackDbHelper(this);
-        // Create database connection
-        dbInit();
-        trackDbHelper.insertFirstTrack("1", "Saudi test run");
+        }
+
     }
 
     private void dbInit() {
@@ -58,7 +70,7 @@ public class TrackMonster extends Application {
                 + TrackContract.TrackEntry.COLUMN_TRACKS_UPDATED  + " TEXT );";
 
         db.execSQL(SQL_CREATE_TRACK_TABLE);
-    //   waypointDbHelper.generateRandomData(20);
+        waypointDbHelper.generateRandomData(20);
     }
     protected boolean canConnect() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

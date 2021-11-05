@@ -26,7 +26,7 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
     public WaypointDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        trackid = prefs.getInt("trackid", 1);
+
     }
 
     @Override
@@ -62,7 +62,7 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT, lat);
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LNG, lng);
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_NAME, name);
-            values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID, trackid);
+            values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID, 1);
             values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT, alt);
 
             db.insertWithOnConflict("waypoints", null, values, SQLiteDatabase.CONFLICT_REPLACE);
