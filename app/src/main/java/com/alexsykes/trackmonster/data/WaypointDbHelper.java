@@ -8,12 +8,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 
 import java.util.ArrayList;
 
@@ -69,7 +66,7 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void addLocation(double lat, double lng, double speed, double bearing, double alt) {
+    public void addLocation(int trackid, double lat, double lng, double speed, double bearing, double alt) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
@@ -98,5 +95,13 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
 
         result.close();
         return theWaypoints;
+    }
+
+    public void uodate() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE waypoints SET trackid = 3 WHERE trackid = '0'";
+
+        db.execSQL(query);
+        db.close();
     }
 }

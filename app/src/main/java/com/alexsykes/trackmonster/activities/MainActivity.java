@@ -1,12 +1,5 @@
 package com.alexsykes.trackmonster.activities;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.preference.PreferenceManager;
-
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
@@ -28,10 +21,16 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
+
 import com.alexsykes.trackmonster.R;
 import com.alexsykes.trackmonster.data.TrackData;
 import com.alexsykes.trackmonster.data.TrackDbHelper;
-import com.alexsykes.trackmonster.data.Waypoint;
 import com.alexsykes.trackmonster.data.WaypointDbHelper;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -47,7 +46,6 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -115,7 +113,7 @@ public class MainActivity extends AppCompatActivity
         locationRequest = new LocationRequest();
         locationRequest.setInterval(1000 * updateInterval);
         locationRequest.setFastestInterval(1000 * FASTEST_UPDATE_INTERVAL);
-        locationRequest.setPriority(locationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
         locationCallback = new LocationCallback() {
             @Override
@@ -145,7 +143,7 @@ public class MainActivity extends AppCompatActivity
         double bearing = location.getBearing();
         double alt = location.getAltitude();
 
-        waypointDbHelper.addLocation(lat, lng, speed, bearing, alt);
+        waypointDbHelper.addLocation(trackid, lat, lng, speed, bearing, alt);
 
         LatLng latLng = new LatLng(lat, lng);
         map.moveCamera(CameraUpdateFactory.newLatLng(latLng));

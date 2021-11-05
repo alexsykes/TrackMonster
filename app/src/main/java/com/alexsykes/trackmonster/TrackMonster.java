@@ -39,6 +39,12 @@ public class TrackMonster extends Application {
 
         }
 
+        // update();
+    }
+
+    private void update() {
+        waypointDbHelper = new WaypointDbHelper(this);
+        waypointDbHelper.uodate();
     }
 
     private void dbInit() {
