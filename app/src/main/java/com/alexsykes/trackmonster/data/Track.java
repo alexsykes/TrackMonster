@@ -6,6 +6,7 @@ public class Track {
     String description;
     String created;
     String updated;
+    String style;
     boolean isVisible;
     boolean isCurrent;
 

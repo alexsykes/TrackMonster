@@ -36,10 +36,7 @@ public class TrackMonster extends Application {
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean("hasRun", true);
             editor.apply();
-
         }
-
-        // update();
     }
 
     private void update() {
@@ -71,9 +68,10 @@ public class TrackMonster extends Application {
                 + TrackContract.TrackEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_NAME + " TEXT NOT NULL, "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION + " TEXT,  "
+                + TrackContract.TrackEntry.COLUMN_TRACKS_STYLE + " TEXT,  "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE + " INTEGER , "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_CREATED + " TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-                + TrackContract.TrackEntry.COLUMN_TRACKS_UPDATED  + " TEXT );";
+                + TrackContract.TrackEntry.COLUMN_TRACKS_UPDATED + " TEXT );";
 
         db.execSQL(SQL_CREATE_TRACK_TABLE);
         waypointDbHelper.generateRandomData(20);

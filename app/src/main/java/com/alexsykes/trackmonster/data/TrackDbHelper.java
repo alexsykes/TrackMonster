@@ -82,10 +82,12 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
         String description = "";
         String name = "";
+        boolean isVisible = true;
         if(count>0) {
             cursor.moveToFirst();
             name = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME));
             description = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION));
+            isVisible = cursor.getInt(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)) > 0;
         }
 
         // Get waypoint data
@@ -139,7 +141,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         latLngBounds = new LatLngBounds(southwest, northeast);
 
         int _id = trackid;
-        TrackData trackData = new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds);
+        TrackData trackData = new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible);
         return trackData;
     }
 
@@ -198,7 +200,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void updateTrack(String trackID, String name, String trackDescription, boolean isVisible  ) {
+    public void updateTrack(int trackID, String name, String trackDescription, boolean isVisible) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
