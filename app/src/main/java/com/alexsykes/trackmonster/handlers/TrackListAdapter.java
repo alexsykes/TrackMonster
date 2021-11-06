@@ -2,7 +2,7 @@ package com.alexsykes.trackmonster.handlers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alexsykes.trackmonster.R;
 import com.alexsykes.trackmonster.activities.TrackListActivity;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -24,7 +23,7 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     ArrayList<HashMap<String, String>> theTrackList;
     HashMap<String, String> theTrack;
     OnItemClickListener listener;
-    SharedPreferences preferences;
+    static SharedPreferences preferences;
     int trackid;
 
     public interface OnItemClickListener {
@@ -88,11 +87,27 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String id = theTrial.get("id").toString();
+                    String id = theTrial.get("id");
                     Context context = v.getContext();
                     ((TrackListActivity) context).onClickCalled(id);
                 }
             });
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    String id = theTrial.get("id");
+                    setActive(id);
+                    Log.i("Info", "onLongClick: " + id);
+                    return true; // Halt execution of normal click
+                }
+            });
+        }
+
+        private void setActive(String id) {
+            int trackID = Integer.valueOf(id);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putInt("trackid", trackID);
+            editor.apply();
         }
     }
 }

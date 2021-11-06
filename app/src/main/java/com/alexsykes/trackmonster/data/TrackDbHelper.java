@@ -82,12 +82,14 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
         String description = "";
         String name = "";
+        String style = "Road";
         boolean isVisible = true;
         if(count>0) {
             cursor.moveToFirst();
             name = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME));
             description = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION));
             isVisible = cursor.getInt(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)) > 0;
+            style = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE));
         }
 
         // Get waypoint data
@@ -141,7 +143,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         latLngBounds = new LatLngBounds(southwest, northeast);
 
         int _id = trackid;
-        TrackData trackData = new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible);
+        TrackData trackData = new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, style);
         return trackData;
     }
 
@@ -171,7 +173,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         //  String query  "INSERT INTO " + DATABASE_NAME
     }
 
-    public int insertNewTrack(boolean isCurrent, String name, String trackDescription, boolean isVisible) {
+    public int insertNewTrack(boolean isCurrent, String name, String trackDescription, boolean isVisible, String style) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         int last = 0;
@@ -179,6 +181,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, name);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, trackDescription);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE, isVisible);
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE, style);
 
         db.insert("tracks", null, values);
 
@@ -200,13 +203,15 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void updateTrack(int trackID, String name, String trackDescription, boolean isVisible) {
+    public void updateTrack(int trackID, String name, String trackDescription, boolean isVisible, String style) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, name);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, trackDescription);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE, isVisible);
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE, style);
+        // values.put(TrackContract.TrackEntry.COLUMN_TRACKS_UPDATED, isVisible);
         values.put(TrackContract.TrackEntry._ID, trackID);
 
         String[] whereArgs = new String[]{String.valueOf(trackID)};

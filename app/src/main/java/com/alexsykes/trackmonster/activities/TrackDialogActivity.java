@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
@@ -32,8 +34,11 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     TextInputLayout descriptionTextInputLayout;
     CheckBox isVisibleCheckBox;
     CheckBox isCurrentCheckBox;
+    RadioGroup trackStyleGroup;
+    RadioButton trackButton, roadButton, majorRoadButton;
     String name;
     String task;
+    String style;
     String trackDescription;
     boolean isVisible, isCurrent;
     int trackID;
@@ -58,11 +63,15 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         isVisibleCheckBox = findViewById(R.id.track_visibility_checkBox);
         isCurrentCheckBox = findViewById(R.id.track_active_checkBox);
         mLayout = findViewById(R.id.trackMap);
+        trackStyleGroup = findViewById(R.id.trackStyleGroup);
+        trackButton = findViewById(R.id.trackButton);
+        roadButton = findViewById(R.id.roadButton);
+        majorRoadButton = findViewById(R.id.majorRoadButton);
 
         // Get the SupportMapFragment and request notification when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.trackMap);
-        mapFragment.getMapAsync((OnMapReadyCallback) this);
+        mapFragment.getMapAsync(this);
 
         // Get data
         trackDbHelper = new TrackDbHelper(this);
@@ -82,6 +91,21 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
             isVisible = trackData.isVisible();
             isVisibleCheckBox.setChecked(isVisible);
             isCurrentCheckBox.setChecked(trackIdFromPrefs == trackID);
+            style = trackData.getStyle();
+
+            switch (style) {
+                case "Track":
+                    trackButton.setChecked(true);
+                    break;
+                case "Road":
+                    roadButton.setChecked(true);
+                    break;
+                case "Major road":
+                    majorRoadButton.setChecked(true);
+                    break;
+                default:
+
+            }
         }
     }
 
@@ -99,10 +123,15 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         isVisible = isVisibleCheckBox.isChecked();
         isCurrent = isCurrentCheckBox.isChecked();
 
+        int radioButtonID = trackStyleGroup.getCheckedRadioButtonId();
+        RadioButton selected = trackStyleGroup.findViewById(radioButtonID);
+        int idx = trackStyleGroup.indexOfChild(selected);
+        String style = selected.getText().toString();
+
         if (task.equals("new")) {
-            trackID = trackDbHelper.insertNewTrack(isCurrent, name, trackDescription, isVisible);
+            trackID = trackDbHelper.insertNewTrack(isCurrent, name, trackDescription, isVisible, style);
         } else if (task.equals("update")) {
-            trackDbHelper.updateTrack(trackID, name, trackDescription, isVisible);
+            trackDbHelper.updateTrack(trackID, name, trackDescription, isVisible, style);
         }
 
         if (isCurrent) {

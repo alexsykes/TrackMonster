@@ -6,17 +6,20 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import java.util.ArrayList;
 
 public class TrackData {
-    private int _id;
-    private int count;
-    private ArrayList<LatLng> latLngs;
-    private String name;
-    private String description;
-    private double north, south, east, west;
-    private LatLngBounds latLngBounds;
+    private final int _id;
+    private final int count;
+    private final ArrayList<LatLng> latLngs;
+    private final String name;
+    private final String description;
+    private final double north;
+    private final double south;
+    private final double east;
+    private final double west;
+    private final LatLngBounds latLngBounds;
     private boolean isVisible, isActive;
     private String style;
 
-    public TrackData(int _id, int count, ArrayList<LatLng> latLngs, String name, String description, double north, double south, double east, double west, LatLngBounds latLngBounds, boolean isVisible) {
+    public TrackData(int _id, int count, ArrayList<LatLng> latLngs, String name, String description, double north, double south, double east, double west, LatLngBounds latLngBounds, boolean isVisible, String style) {
         this._id = _id;
         this.count = count;
         this.latLngs = latLngs;
@@ -29,6 +32,7 @@ public class TrackData {
         this.latLngBounds = latLngBounds;
         this.isVisible = isVisible;
         this.isActive = isActive;
+        this.style = style;
     }
 
 
@@ -61,8 +65,6 @@ public class TrackData {
         this.latLngBounds = latLngBounds;
     }
 
-    public TrackData() {
-    }
 
     public int getCount() {
         return count;
