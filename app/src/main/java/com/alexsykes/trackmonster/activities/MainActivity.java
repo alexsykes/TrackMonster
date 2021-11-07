@@ -53,6 +53,7 @@ import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
 
 // See https://developers.google.com/maps/documentation/android-sdk/map-with-marker
+// https://developers.google.com/maps/documentation/android-sdk/current-place-tutorial
 // https://developers.google.com/maps/documentation/android-sdk/map
 // https://developer.android.com/training/location/retrieve-current
 // https://www.journaldev.com/13325/android-location-api-tracking-gps
@@ -260,22 +261,6 @@ public class MainActivity extends AppCompatActivity
         uiSettings.setMapToolbarEnabled(true);
         map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
         getLocationPermission();
-        try {
-            if (locationPermissionGranted) {
-                map.setMyLocationEnabled(true);
-                map.getUiSettings().setMyLocationButtonEnabled(true);
-                if(trackingOn) {
-                    startLocationUpdates();
-                } else {
-                    stopLocationUpdates();
-                }
-            } else {
-                map.setMyLocationEnabled(false);
-                map.getUiSettings().setMyLocationButtonEnabled(false);
-            }
-        } catch (SecurityException e) {
-            Log.e("Exception: %s", e.getMessage());
-        }
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
@@ -332,6 +317,7 @@ public class MainActivity extends AppCompatActivity
         latLngBounds = calcBounds(trackDataArray);
     }
 
+    // Overloaded methods returning LatLngBounds for TrackData
     private LatLngBounds calcBounds(TrackData[] trackDataArray) {
         int numTracks;
         LatLng northeast, southwest;
@@ -364,7 +350,6 @@ public class MainActivity extends AppCompatActivity
         southwest = new LatLng(southmost, westmost);
         return new LatLngBounds(southwest, northeast);
     }
-
     private LatLngBounds calcBounds(ArrayList<LatLng> track) {
         double north = -88;
         double south = 88;
@@ -374,10 +359,18 @@ public class MainActivity extends AppCompatActivity
         // LatLng latLng = new LatLng(0,0);
 
         for (LatLng latLng : track) {
-            if(latLng.latitude > north) { north = latLng.latitude; }
-            if(latLng.longitude < west) { west = latLng.longitude; }
-            if(latLng.latitude < south) { south = latLng.latitude; }
-            if(latLng.longitude > east) { east = latLng.longitude; }
+            if (latLng.latitude > north) {
+                north = latLng.latitude;
+            }
+            if (latLng.longitude < west) {
+                west = latLng.longitude;
+            }
+            if (latLng.latitude < south) {
+                south = latLng.latitude;
+            }
+            if (latLng.longitude > east) {
+                east = latLng.longitude;
+            }
         }
 
         LatLng topRight = new LatLng(north, east);
@@ -385,20 +378,64 @@ public class MainActivity extends AppCompatActivity
         return new LatLngBounds(bottomLeft, topRight);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    // Location section
+    private void getLocationPermission() {
+        /*
+         * Request location permission, so that we can get the location of the
+         * device. The result of the permission request is handled by a callback,
+         * onRequestPermissionsResult.
+         */
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            locationPermissionGranted = true;
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        // Reference version has super call missing with locationPermissionGranted mutations as below
+        // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // locationPermissionGranted = false;
         switch (requestCode) {
             case PERMISSION_FINE_LOCATION:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //updateGPS();
+                    //  locationPermissionGranted = true;
                 } else {
                     Toast.makeText(this, "Permissions needed", Toast.LENGTH_SHORT).show();
                     finish();
                 }
+            default:
+        }
+        updateLocationUI();
+    }
+
+    private void updateLocationUI() {
+        if (map == null) {
+            return;
+        }
+        try {
+            if (locationPermissionGranted) {
+                map.setMyLocationEnabled(true);
+                map.getUiSettings().setMyLocationButtonEnabled(true);
+            } else {
+                map.setMyLocationEnabled(false);
+                map.getUiSettings().setMyLocationButtonEnabled(false);
+                lastKnownLocation = null;
+                getLocationPermission();
+            }
+        } catch (SecurityException e) {
+            Log.e("Exception: %s", e.getMessage());
         }
     }
+
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -408,35 +445,40 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onConnectionSuspended(int i) {
         Log.i(TAG, "onConnected: suspended" + i);
-
     }
-    // Events ends
-/*
-    private void updateGPS() {
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(MainActivity.this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Permission granted
-            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    // updateMap(location);
-                }
-            });
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_FINE_LOCATION);
-            }
-        }
-    }*/
-/*
-    private void updateMap(Location location) {
-        if (location != null) {
-            double lat = location.getLatitude();
-            double lng = location.getLongitude();
-        }
 
-        Log.i("Info", "updateMap: called");
-    }*/
+    private void getDeviceLastLocation() {
+        /*      Can this be replaced by map showing all visible tracks?
+         * *     Get the best and most recent location of the device, which may be null in rare
+         *      cases when a location is not available.*/
+
+        try {
+            if (locationPermissionGranted) {
+                Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
+                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Location> task) {
+                        if (task.isSuccessful()) {
+                            // Set the map's camera position to the current location of the device.
+                            lastKnownLocation = task.getResult();
+                            Log.i(TAG, "getDeviceLastLocation: onComplete: lastKnownLocation");
+                            if (lastKnownLocation != null) {
+                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                            }
+                        } else {
+                            Log.d(TAG, "Current location is null. Using defaults.");
+                            Log.e(TAG, "Exception: %s", task.getException());
+                            // map.moveCamera(CameraUpdateFactory
+                            //         .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+                            map.getUiSettings().setMyLocationButtonEnabled(false);
+                        }
+                    }
+                });
+            }
+        } catch (SecurityException e) {
+            Log.e("Exception: %s", e.getMessage(), e);
+        }
+    }
 
     /**
      * Manipulates the map when it's available.
@@ -497,56 +539,5 @@ public class MainActivity extends AppCompatActivity
         mGoogleApiClient.connect();
     }
 
-    // [START maps_current_place_location_permission]
-    private void getLocationPermission() {
-        /*
-         * Request location permission, so that we can get the location of the
-         * device. The result of the permission request is handled by a callback,
-         * onRequestPermissionsResult.
-         */
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            locationPermissionGranted = true;
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-        }
-    }
-    // [END maps_current_place_location_permission]
 
-    // [START maps_current_place_get_device_location]
-    private void getDeviceLastLocation() {
-
-        /*         * Get the best and most recent location of the device, which may be null in rare
-         * cases when a location is not available.*/
-
-        try {
-            if (locationPermissionGranted) {
-                Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            lastKnownLocation = task.getResult();
-                            Log.i(TAG, "getDeviceLastLocation: onComplete: lastKnownLocation");
-                            if (lastKnownLocation != null) {
-                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                            }
-                        } else {
-                            Log.d(TAG, "Current location is null. Using defaults.");
-                            Log.e(TAG, "Exception: %s", task.getException());
-                            // map.moveCamera(CameraUpdateFactory
-                            //         .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
-                            map.getUiSettings().setMyLocationButtonEnabled(false);
-                        }
-                    }
-                });
-            }
-        } catch (SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage(), e);
-        }
-    }
 }
