@@ -61,7 +61,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleApiClient.ConnectionCallbacks {
-    private final LatLng defaultLocation = new LatLng(52.023728, -1.147916);
+    // private final LatLng defaultLocation = new LatLng(52.023728, -1.147916);
     int updateInterval;
     int trackid;
 
@@ -286,13 +286,11 @@ public class MainActivity extends AppCompatActivity
             map.setMyLocationEnabled(true);
         }
 
-        // LatLng home = new LatLng(53.594700, -2.560996);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+        // map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
         if (cameraPosition != null) {
             map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
         getDeviceLastLocation();
-
 
         // Replace this
         waypointDbHelper = new WaypointDbHelper(this);
@@ -301,11 +299,8 @@ public class MainActivity extends AppCompatActivity
             LatLngBounds latLngBounds = showCurrentTrack(currentTrack);
             map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,1000, 1000, 3));
         }
-        // With this
         trackDbHelper = new TrackDbHelper(this);
-        displayActiveTrack();
 
-        //
     }
 
     private LatLngBounds showCurrentTrack(ArrayList<LatLng> currentTrack) {
@@ -499,13 +494,13 @@ public class MainActivity extends AppCompatActivity
                             lastKnownLocation = task.getResult();
                             Log.i(TAG, "getDeviceLastLocation: onComplete: lastKnownLocation");
                             if (lastKnownLocation != null) {
-                                //    map.moveCamera(CameraUpdateFactory.newLatLngZoom( new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
                             }
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
-                            map.moveCamera(CameraUpdateFactory
-                                    .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+                            // map.moveCamera(CameraUpdateFactory
+                            //         .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
                             map.getUiSettings().setMyLocationButtonEnabled(false);
                         }
                     }

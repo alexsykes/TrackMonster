@@ -45,13 +45,12 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
         double lng = 40;
         double alt;
 
-
         for(int i = 0; i < itemCount; i++) {
             name = "Waypoint " + i;
-            lat += (0.5 - Math.random());
-            lng += (0.5 - Math.random());
+            lat += (0.5 - Math.random()) / 10;
+            lng += (0.5 - Math.random()) / 10;
             alt = Math.random() * 1000;
-            String data = name + "::Data - lng: "  + lng + " lat: " + lat;
+            String data = name + "::Data - lng: " + lng + " lat: " + lat;
             Log.i("Info", data);
 
             ContentValues values = new ContentValues();
@@ -78,8 +77,6 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
 
         db.insert("waypoints", null, values);
     }
-
-
 
     public ArrayList<LatLng> getTrackPoints(int trackID){
         ArrayList<LatLng> theWaypoints = new ArrayList<LatLng>();

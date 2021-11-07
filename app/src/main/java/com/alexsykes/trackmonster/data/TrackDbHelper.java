@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
@@ -20,53 +19,11 @@ import java.util.HashMap;
 public class TrackDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "monster.db";
     private static final int DATABASE_VERSION = 1;
-    private final int trackid;
 
     public TrackDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        trackid = prefs.getInt("trackid", 1);
     }
-
-    @SuppressLint("Range")
-    public HashMap<String, String> getTrackData(String trackid) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        String query = "SELECT * FROM tracks WHERE _id = " + trackid;
-        Log.i("Info", query);
-        Cursor cursor = db.rawQuery(query, null);
-
-        cursor.moveToFirst();
-        HashMap<String, String> theTrack = new HashMap<String, String>();
-        theTrack.put("id", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry._ID)));
-        theTrack.put("description", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION)));
-        theTrack.put("isVisible", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)));
-        theTrack.put("name", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME)));
-        cursor.close();
-        return theTrack;
-    }
-    public ArrayList<HashMap<String, String>> getTrackList() {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        String query = "SELECT t._id AS id, t.name AS name, t.created AS created, COUNT(w._id) AS count, t.isVisible AS isVisible FROM tracks t LEFT JOIN waypoints w ON id = w.trackid " +
-                "GROUP BY w.trackid ORDER BY t._id ASC";
-
-        // query = "SELECT * FROM tracks";
-        Cursor cursor = db.rawQuery(query, null);
-        ArrayList<HashMap<String, String>> theTrackList = new ArrayList<>();
-        while (cursor.moveToNext()) {
-            HashMap<String, String> tracks = new HashMap<>();
-            tracks.put("id", cursor.getString(0));
-            tracks.put("name", cursor.getString(1));
-            tracks.put("created", cursor.getString(2));
-            tracks.put("count", cursor.getString(3));
-            tracks.put("isVisible", cursor.getString(4));
-            theTrackList.add(tracks);
-        }
-        cursor.close();
-        return theTrackList;
-    }
-
 
     @SuppressLint("Range")
     public TrackData getTrackData(int trackid){
@@ -167,12 +124,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         return theTrackList;
     }
 
-    public void addEntry(String name, String description) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        //  String query  "INSERT INTO " + DATABASE_NAME
-    }
-
     public int insertNewTrack(boolean isCurrent, String name, String trackDescription, boolean isVisible, String style) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -196,9 +147,9 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         return last;
     }
 
-    public void insertFirstTrack(String trackID, String name ) {
+    public void insertFirstTrack(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "INSERT  OR IGNORE INTO tracks  (_id, name, isvisible ) VALUES ('1','"+name+"', true)";
+        String query = "INSERT  OR IGNORE INTO tracks  (_id, name, isvisible, style ) VALUES ('1','" + name + "', true, 'Track')";
         db.execSQL(query);
         db.close();
     }

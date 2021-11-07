@@ -42,4 +42,5 @@
     <string name="track">Track</string>
     <string name="road">Road</string>
     <string name="major_road">Major road</string>
+    <string name="undefined">Undefined</string>
 </resources>

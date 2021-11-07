@@ -2,7 +2,6 @@ package com.alexsykes.trackmonster.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +22,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -35,7 +35,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     CheckBox isVisibleCheckBox;
     CheckBox isCurrentCheckBox;
     RadioGroup trackStyleGroup;
-    RadioButton trackButton, roadButton, majorRoadButton;
+    RadioButton undefinedButton, trackButton, roadButton, majorRoadButton;
     String name;
     String task;
     String style;
@@ -64,6 +64,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         isCurrentCheckBox = findViewById(R.id.track_active_checkBox);
         mLayout = findViewById(R.id.trackMap);
         trackStyleGroup = findViewById(R.id.trackStyleGroup);
+        undefinedButton = findViewById(R.id.undefinedButton);
         trackButton = findViewById(R.id.trackButton);
         roadButton = findViewById(R.id.roadButton);
         majorRoadButton = findViewById(R.id.majorRoadButton);
@@ -103,8 +104,10 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
                 case "Major road":
                     majorRoadButton.setChecked(true);
                     break;
+                case "Undefined":
+                    undefinedButton.setChecked(true);
+                    break;
                 default:
-
             }
         }
     }
@@ -159,18 +162,44 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void displayTrack() {
+        final int COLOR_WHITE_ARGB = 0xffffffff;
+        final int COLOR_DARK_GREEN_ARGB = 0xff388E3C;
+        final int COLOR_LIGHT_GREEN_ARGB = 0xff81C784;
+        final int COLOR_DARK_ORANGE_ARGB = 0xffF57F17;
+        final int COLOR_LIGHT_ORANGE_ARGB = 0xffF9A825;
+
+        int strokeWidth = 5;
+        int strokeColour = COLOR_DARK_GREEN_ARGB;
+
         LatLngBounds latLngBounds = trackData.getLatLngBounds();
         ArrayList<LatLng> latLngs = trackData.getLatLngs();
         PolylineOptions polylineOptions = new PolylineOptions();
         // Create polyline options with existing LatLng ArrayList
         polylineOptions.addAll(latLngs);
-        polylineOptions
-                .width(5)
-                .color(Color.BLUE);
+        //polylineOptions
+        //        .width(5)
+        //        .color(Color.BLUE);
 
-        map.addPolyline(polylineOptions);
+        Polyline polyline = map.addPolyline(polylineOptions);
+        switch (style) {
+            case "Undefined":
+                strokeColour = COLOR_LIGHT_GREEN_ARGB;
+                break;
+            case "Track":
+                strokeColour = COLOR_DARK_GREEN_ARGB;
+                strokeWidth = 10;
+                break;
+            case "Road":
+                strokeColour = COLOR_LIGHT_ORANGE_ARGB;
+                break;
+            case "Major road":
+                strokeColour = COLOR_DARK_ORANGE_ARGB;
+                strokeWidth = 10;
+                break;
+        }
+        polyline.setColor(strokeColour);
+        polyline.setWidth(strokeWidth);
+
         map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
-
-
     }
 }
