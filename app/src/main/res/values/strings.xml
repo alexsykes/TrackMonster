@@ -43,4 +43,7 @@
     <string name="road">Road</string>
     <string name="major_road">Major road</string>
     <string name="undefined">Undefined</string>
+    <string name="fab_start_recording">Start recording track</string>
+    <string name="fab_stop_recording">Stop recording track</string>
+    <string name="fab_pause_recording">Pause track recording</string>
 </resources>

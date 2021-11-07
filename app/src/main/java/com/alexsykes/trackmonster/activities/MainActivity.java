@@ -18,7 +18,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -49,6 +48,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
@@ -59,10 +59,10 @@ import java.util.ArrayList;
 // https://www.journaldev.com/13325/android-location-api-tracking-gps
 // https://www.youtube.com/watch?v=2ibBng2eJJA
 // https://www.youtube.com/watch?v=_xUcYfbtfsI
+// https://material.io/components/buttons-floating-action-button
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleApiClient.ConnectionCallbacks {
-    // private final LatLng defaultLocation = new LatLng(52.023728, -1.147916);
     int updateInterval;
     int trackid;
 
@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity
     // UI components
     private View mLayout;
     private GoogleMap map;
-    private TextView statusLine;
+    private FloatingActionButton fab;
 
     // Google API
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -109,8 +109,18 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         getPrefs();
         trackDbHelper = new TrackDbHelper(this);
-        statusLine = findViewById(R.id.statusLine);
         mLayout = findViewById(R.id.map);
+        fab = findViewById(R.id.fab);
+
+        // FAB actions
+        fab.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "onClick: Start recording");
+            }
+        });
+
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = new LocationRequest();
@@ -153,10 +163,6 @@ public class MainActivity extends AppCompatActivity
 
         logentry = "Status:\nLat: " + lat + "\nLng: " + lng + "\nSpeed: " + speed + "\nBearing: " + bearing;
         Log.i("Status", logentry);
-
-        // TODO updateCamera
-        // updateMap(location);
-        statusLine.setText(logentry);
     }
 
     @Override
@@ -255,7 +261,7 @@ public class MainActivity extends AppCompatActivity
     public void onMapReady(GoogleMap map) {
         this.map = map;
         UiSettings uiSettings = map.getUiSettings();
-        uiSettings.setZoomControlsEnabled(true);
+        // uiSettings.setZoomControlsEnabled(true);
         uiSettings.setCompassEnabled(true);
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setMapToolbarEnabled(true);
