@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity
     private TrackDbHelper trackDbHelper;
     private WaypointDbHelper waypointDbHelper;
     private ArrayList<LatLng> currentTrack;
+    private TrackData[] trackDataArray;
 
     // Lifecycle starts
     @Override
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getPrefs();
+        trackDbHelper = new TrackDbHelper(this);
         statusLine = findViewById(R.id.statusLine);
         mLayout = findViewById(R.id.map);
         // Construct a FusedLocationProviderClient.
@@ -167,6 +169,7 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         // startLocationUpdates();
         Log.i(TAG, "MainActivity: onStart: ");
+        displayAllVisibleTracks();
     }
 
     @Override
@@ -299,8 +302,7 @@ public class MainActivity extends AppCompatActivity
             LatLngBounds latLngBounds = showCurrentTrack(currentTrack);
             map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,1000, 1000, 3));
         }
-        trackDbHelper = new TrackDbHelper(this);
-
+        // trackDbHelper = new TrackDbHelper(this);
     }
 
     private LatLngBounds showCurrentTrack(ArrayList<LatLng> currentTrack) {
@@ -313,15 +315,57 @@ public class MainActivity extends AppCompatActivity
 
         map.addPolyline(polylineOptions);
 
-         LatLngBounds latLngBounds = calcBounds(currentTrack);
+        LatLngBounds latLngBounds = calcBounds(currentTrack);
         return latLngBounds;
     }
 
-    private void displayActiveTrack(){
+    private void displayActiveTrack() {
         TrackData trackData = trackDbHelper.getTrackData(trackid);
     }
 
-    private LatLngBounds calcBounds(ArrayList<LatLng> track){
+    private void displayAllVisibleTracks() {
+        int numTracks;
+        LatLngBounds latLngBounds;
+        trackDataArray = trackDbHelper.getAllTrackData();
+        numTracks = trackDataArray.length;
+
+        latLngBounds = calcBounds(trackDataArray);
+    }
+
+    private LatLngBounds calcBounds(TrackData[] trackDataArray) {
+        int numTracks;
+        LatLng northeast, southwest;
+
+        numTracks = trackDataArray.length;
+        LatLngBounds latLngBounds;
+        TrackData currentTrackData;
+        double westmost = trackDataArray[0].getWest();
+        double eastmost = trackDataArray[0].getEast();
+        double southmost = trackDataArray[0].getSouth();
+        double northmost = trackDataArray[0].getNorth();
+
+        for (int i = 0; i < numTracks; i++) {
+            currentTrackData = trackDataArray[i];
+            if (currentTrackData.getNorth() > northmost) {
+                northmost = currentTrackData.getNorth();
+            }
+            if (currentTrackData.getSouth() < southmost) {
+                southmost = currentTrackData.getSouth();
+            }
+            if (currentTrackData.getWest() < westmost) {
+                westmost = currentTrackData.getWest();
+            }
+            if (currentTrackData.getEast() > eastmost) {
+                eastmost = currentTrackData.getEast();
+            }
+        }
+
+        northeast = new LatLng(northmost, eastmost);
+        southwest = new LatLng(southmost, westmost);
+        return new LatLngBounds(southwest, northeast);
+    }
+
+    private LatLngBounds calcBounds(ArrayList<LatLng> track) {
         double north = -88;
         double south = 88;
         double east = -180;
@@ -329,7 +373,7 @@ public class MainActivity extends AppCompatActivity
 
         // LatLng latLng = new LatLng(0,0);
 
-        for (LatLng latLng : track){
+        for (LatLng latLng : track) {
             if(latLng.latitude > north) { north = latLng.latitude; }
             if(latLng.longitude < west) { west = latLng.longitude; }
             if(latLng.latitude < south) { south = latLng.latitude; }
@@ -340,12 +384,7 @@ public class MainActivity extends AppCompatActivity
         LatLng bottomLeft = new LatLng(south, west);
         return new LatLngBounds(bottomLeft, topRight);
     }
-    
-    private void showAllVisibleTracks() {
-        trackDbHelper = new TrackDbHelper(this);
-        ArrayList<ArrayList<LatLng>> theTrackData = new ArrayList<ArrayList<LatLng>>();
-        theTrackData = trackDbHelper.getAllTrackPoints();
-    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);

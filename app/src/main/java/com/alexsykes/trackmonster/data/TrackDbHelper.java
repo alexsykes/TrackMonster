@@ -104,6 +104,23 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         return trackData;
     }
 
+    public TrackData[] getAllTrackData() {
+        TrackData[] trackDataArray;
+        ArrayList<HashMap<String, String>> trackList;
+        int numTracks;
+
+        trackList = getShortVisibleTrackList();
+        trackDataArray = new TrackData[trackList.size()];
+        // Initialise database - get count of tracks
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        for (int i = 0; i < trackList.size(); i++) {
+            int trackid = Integer.parseInt(trackList.get(i).get("id"));
+            trackDataArray[i] = getTrackData(trackid);
+        }
+        return trackDataArray;
+    }
+
     @SuppressLint("Range")
     public ArrayList<HashMap<String, String>> getShortTrackList() {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -115,7 +132,27 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         ArrayList<HashMap<String, String>> theTrackList = new ArrayList<>();
         while (cursor.moveToNext()) {
             HashMap<String, String> tracks = new HashMap<>();
-            tracks.put("id",cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry._ID)));
+            tracks.put("id", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry._ID)));
+            tracks.put("name", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME)));
+            tracks.put("isVisible", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)));
+            theTrackList.add(tracks);
+        }
+        cursor.close();
+        return theTrackList;
+    }
+
+    @SuppressLint("Range")
+    public ArrayList<HashMap<String, String>> getShortVisibleTrackList() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query = "SELECT _id , name, isVisible FROM tracks WHERE isVisible = '1' ORDER BY _id ASC";
+
+        // query = "SELECT * FROM tracks";
+        Cursor cursor = db.rawQuery(query, null);
+        ArrayList<HashMap<String, String>> theTrackList = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            HashMap<String, String> tracks = new HashMap<>();
+            tracks.put("id", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry._ID)));
             tracks.put("name", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME)));
             tracks.put("isVisible", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)));
             theTrackList.add(tracks);
