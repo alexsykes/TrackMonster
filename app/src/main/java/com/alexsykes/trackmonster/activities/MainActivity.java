@@ -68,14 +68,14 @@ public class MainActivity extends AppCompatActivity
 
     // Flags
     private boolean useGPSonly;
-    private boolean trackingOn;
+    private boolean isRecording;
     private boolean requestingLocationUpdates;
     private boolean locationPermissionGranted;
 
     // UI components
     private View mLayout;
     private GoogleMap map;
-    private FloatingActionButton fab;
+    private FloatingActionButton fabRecord, fabStop, fabPause;
 
     // Google API
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -110,17 +110,42 @@ public class MainActivity extends AppCompatActivity
         getPrefs();
         trackDbHelper = new TrackDbHelper(this);
         mLayout = findViewById(R.id.map);
-        fab = findViewById(R.id.fab);
+        fabRecord = findViewById(R.id.fabRecord);
+        fabStop = findViewById(R.id.fabStop);
+        fabPause = findViewById(R.id.fabPause);
 
         // FAB actions
-        fab.setOnClickListener(new View.OnClickListener() {
+        fabRecord.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "onClick: Start recording");
+                fabRecord.show();
+                fabStop.show();
+                fabPause.show();
+                fabPause.animate().translationX(-200);
+                fabStop.animate().translationX(-400);
             }
         });
 
+        fabStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fabPause.animate().translationX(0);
+                fabStop.animate().translationX(0);
+                fabStop.hide();
+                fabPause.hide();
+            }
+        });
+
+        fabPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fabStop.animate().translationX(0);
+                fabPause.animate().translationX(0);
+                fabPause.hide();
+                fabStop.hide();
+            }
+        });
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = new LocationRequest();
@@ -176,6 +201,13 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         // startLocationUpdates();
         Log.i(TAG, "MainActivity: onStart: ");
+        //noinspection StatementWithEmptyBody
+        if (isRecording == true) {
+        } else {
+            isRecording = false;
+        }
+
+
         displayAllVisibleTracks();
     }
 
@@ -230,7 +262,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         useGPSonly = prefs.getBoolean("useGPSonly", false);
-        trackingOn = prefs.getBoolean("trackingOn", false);
+        //trackingOn = prefs.getBoolean("trackingOn", false);
         trackid = prefs.getInt("trackid", 1);
         updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
         requestingLocationUpdates = !useGPSonly;
