@@ -8,6 +8,9 @@
         <entry key="app/src/main/res/drawable/ic_baseline_add_circle_24.xml" value="0.34791666666666665" />
         <entry key="app/src/main/res/drawable/ic_baseline_add_circle_48.xml" value="0.4564814814814815" />
         <entry key="app/src/main/res/drawable/ic_baseline_play_arrow_24.xml" value="0.390625" />
+        <entry key="app/src/main/res/drawable/ic_baseline_stop_24.xml" value="0.19537037037037036" />
+        <entry key="app/src/main/res/drawable/ic_play_arrow_48.xml" value="0.19537037037037036" />
+        <entry key="app/src/main/res/drawable/ic_stop_24.xml" value="0.11851851851851852" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_track_dalog.xml" value="0.328125" />
         <entry key="app/src/main/res/layout/activity_track_dialog.xml" value="0.18726591760299627" />

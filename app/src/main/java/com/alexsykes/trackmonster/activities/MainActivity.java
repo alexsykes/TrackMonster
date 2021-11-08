@@ -1,5 +1,8 @@
 package com.alexsykes.trackmonster.activities;
 
+import static com.alexsykes.trackmonster.R.color.fab_colour_state_list;
+import static com.alexsykes.trackmonster.R.color.small_fab_colour_state_list;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +26,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
@@ -67,15 +71,12 @@ public class MainActivity extends AppCompatActivity
     int trackid;
 
     // Flags
-    private boolean useGPSonly;
     private boolean isRecording;
-    private boolean requestingLocationUpdates;
+    private static final String KEY_IS_RECORDING = "isRecording";
     private boolean locationPermissionGranted;
 
-    // UI components
-    private View mLayout;
     private GoogleMap map;
-    private FloatingActionButton fabRecord, fabStop, fabPause;
+    private boolean fabCollapsed;
 
     // Google API
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -86,7 +87,7 @@ public class MainActivity extends AppCompatActivity
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
-    public static final String EXTRA_MESSAGE = "com.alexsykes.trackmonster.activities.MESSAGE";
+    private FloatingActionButton fabRecord, fabCutAndNew;
     public static final int DEFAULT_UPDATE_INTERVAL = 30;
     public static final int FASTEST_UPDATE_INTERVAL = 30;
     private static final int PERMISSION_FINE_LOCATION = 99;
@@ -95,12 +96,10 @@ public class MainActivity extends AppCompatActivity
     private Location lastKnownLocation;
     private CameraPosition cameraPosition;
     private LocationCallback locationCallback;
-    private Location currentLocation;
     private LocationRequest locationRequest;
     private TrackDbHelper trackDbHelper;
     private WaypointDbHelper waypointDbHelper;
     private ArrayList<LatLng> currentTrack;
-    private TrackData[] trackDataArray;
 
     // Lifecycle starts
     @Override
@@ -109,43 +108,14 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         getPrefs();
         trackDbHelper = new TrackDbHelper(this);
-        mLayout = findViewById(R.id.map);
+        // UI components
+        View mLayout = findViewById(R.id.map);
         fabRecord = findViewById(R.id.fabRecord);
-        fabStop = findViewById(R.id.fabStop);
-        fabPause = findViewById(R.id.fabPause);
+        fabCutAndNew = findViewById(R.id.fabCutAndNew);
 
-        // FAB actions
-        fabRecord.setOnClickListener(new View.OnClickListener() {
+        // Set up FAB menu
+        fabSetup();
 
-            @Override
-            public void onClick(View v) {
-                fabRecord.show();
-                fabStop.show();
-                fabPause.show();
-                fabPause.animate().translationX(-200);
-                fabStop.animate().translationX(-400);
-            }
-        });
-
-        fabStop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fabPause.animate().translationX(0);
-                fabStop.animate().translationX(0);
-                fabStop.hide();
-                fabPause.hide();
-            }
-        });
-
-        fabPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fabStop.animate().translationX(0);
-                fabPause.animate().translationX(0);
-                fabPause.hide();
-                fabStop.hide();
-            }
-        });
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = new LocationRequest();
@@ -170,6 +140,58 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+    private void fabSetup() {
+        fabRecord.setBackgroundTintList(AppCompatResources.getColorStateList(this, fab_colour_state_list));
+        fabCutAndNew.setBackgroundTintList(AppCompatResources.getColorStateList(this, small_fab_colour_state_list));
+        // FAB actions
+        if (isRecording) {
+            fabRecord.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_baseline_stop_24));
+        } else {
+            fabRecord.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_play_arrow_48));
+        }
+
+        // OnClickListener - toggle recording mode
+        fabRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isRecording) {
+                    fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_baseline_stop_24));
+                } else {
+                    fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_play_arrow_48));
+                }
+                fabCutAndNew.hide();
+                isRecording = !isRecording;
+            }
+        });
+
+        // OnLongClickListener - show option to cut and create new track
+        fabRecord.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (isRecording) {
+                    fabRecord.show();
+                    fabCutAndNew.show();
+                    fabCutAndNew.animate().translationX(-(fabRecord.getCustomSize()));
+                }
+                return false;
+            }
+        });
+
+        fabCutAndNew.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fabCutAndNew.animate().translationX(0);
+                fabCutAndNew.hide();
+                if (isRecording) {
+                    cutAndNew();
+                }
+            }
+        });
+    }
+
+    private void cutAndNew() {
     }
 
     private void processNewLocation(Location location) {
@@ -201,6 +223,7 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         // startLocationUpdates();
         Log.i(TAG, "MainActivity: onStart: ");
+        fabCollapsed = true;
         //noinspection StatementWithEmptyBody
         if (isRecording == true) {
         } else {
@@ -217,12 +240,14 @@ public class MainActivity extends AppCompatActivity
         Log.i(TAG, "MainActivity: onRestoreInstanceState: ");
         lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
         cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+        isRecording = (boolean) savedInstanceState.getSerializable(KEY_IS_RECORDING);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.i(TAG, "MainActivity: onSaveInstanceState: ");
+        outState.putSerializable(KEY_IS_RECORDING, isRecording);
         if (map != null) {
             outState.putParcelable(KEY_CAMERA_POSITION, map.getCameraPosition());
             outState.putParcelable(KEY_LOCATION, lastKnownLocation);
@@ -255,17 +280,14 @@ public class MainActivity extends AppCompatActivity
     // Setup
     private void getPrefs() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (canConnect() == false) {
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean("useGPSonly", true);
-            editor.apply();
-        }
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("useGPSonly", true);
+        editor.putBoolean("canConnect", canConnect());
+        editor.apply();
 
-        useGPSonly = prefs.getBoolean("useGPSonly", false);
-        //trackingOn = prefs.getBoolean("trackingOn", false);
+        isRecording = prefs.getBoolean("isRecording", false);
         trackid = prefs.getInt("trackid", 1);
         updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
-        requestingLocationUpdates = !useGPSonly;
     }
 
     protected boolean canConnect() {
@@ -349,7 +371,7 @@ public class MainActivity extends AppCompatActivity
     private void displayAllVisibleTracks() {
         int numTracks;
         LatLngBounds latLngBounds;
-        trackDataArray = trackDbHelper.getAllTrackData();
+        TrackData[] trackDataArray = trackDbHelper.getAllTrackData();
         numTracks = trackDataArray.length;
 
         latLngBounds = calcBounds(trackDataArray);
