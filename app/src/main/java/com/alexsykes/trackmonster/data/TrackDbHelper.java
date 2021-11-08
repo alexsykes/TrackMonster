@@ -3,17 +3,16 @@ package com.alexsykes.trackmonster.data;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import androidx.preference.PreferenceManager;
-
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 public class TrackDbHelper extends SQLiteOpenHelper {
@@ -22,7 +21,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
     public TrackDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     @SuppressLint("Range")
@@ -100,14 +98,12 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         latLngBounds = new LatLngBounds(southwest, northeast);
 
         int _id = trackid;
-        TrackData trackData = new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, style);
-        return trackData;
+        return new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, style);
     }
 
     public TrackData[] getAllTrackData() {
         TrackData[] trackDataArray;
         ArrayList<HashMap<String, String>> trackList;
-        int numTracks;
 
         trackList = getShortVisibleTrackList();
         trackDataArray = new TrackData[trackList.size()];
@@ -178,8 +174,9 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             Cursor result = db.rawQuery(sql, null);
             result.moveToFirst();
             last = result.getInt(0);
-
+            result.close();
         }
+
         db.close();
         return last;
     }
@@ -199,7 +196,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, trackDescription);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE, isVisible);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE, style);
-        // values.put(TrackContract.TrackEntry.COLUMN_TRACKS_UPDATED, isVisible);
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_UPDATED, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         values.put(TrackContract.TrackEntry._ID, trackID);
 
         String[] whereArgs = new String[]{String.valueOf(trackID)};
