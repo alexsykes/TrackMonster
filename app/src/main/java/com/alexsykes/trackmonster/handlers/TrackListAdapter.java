@@ -24,7 +24,7 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     HashMap<String, String> theTrack;
     OnItemClickListener listener;
     static SharedPreferences preferences;
-    int trackid;
+    //int trackid;
 
     public interface OnItemClickListener {
         void onItemClick(HashMap<String, String> theTrack);
@@ -48,8 +48,8 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     @Override
     public TrackHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         preferences  = PreferenceManager.getDefaultSharedPreferences(viewGroup.getContext());
-        trackid = preferences.getInt("trackid", 1);
-        Log.i("Info", "trackid: " + trackid);
+//        trackid = preferences.getInt("trackid", 1);
+//        Log.i("Info", "trackid: " + trackid);
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.track_row, viewGroup, false);
         TrackHolder trackHolder = new TrackHolder(v);
         return trackHolder;
@@ -58,7 +58,7 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     @Override
     public void onBindViewHolder(@NonNull TrackHolder holder, final int position) {
         theTrack = theTrackList.get(position);
-        if (trackid == Integer.valueOf(theTrack.get("id"))) {
+        if (1 == Integer.valueOf(theTrack.get("isCurrent"))) {
             holder.itemView.setBackgroundResource(R.color.list_highlist);
         }
         holder.nameTextView.setText(theTrack.get("name"));

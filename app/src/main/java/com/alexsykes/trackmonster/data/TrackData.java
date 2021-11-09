@@ -16,10 +16,10 @@ public class TrackData {
     private final double east;
     private final double west;
     private final LatLngBounds latLngBounds;
-    private boolean isVisible, isActive;
+    private boolean isVisible, isCurrent;
     private String style;
 
-    public TrackData(int _id, int count, ArrayList<LatLng> latLngs, String name, String description, double north, double south, double east, double west, LatLngBounds latLngBounds, boolean isVisible, String style) {
+    public TrackData(int _id, int count, ArrayList<LatLng> latLngs, String name, String description, double north, double south, double east, double west, LatLngBounds latLngBounds, boolean isVisible, boolean isCurrent, String style) {
         this._id = _id;
         this.count = count;
         this.latLngs = latLngs;
@@ -31,7 +31,7 @@ public class TrackData {
         this.west = west;
         this.latLngBounds = latLngBounds;
         this.isVisible = isVisible;
-        this.isActive = isActive;
+        this.isCurrent = this.isCurrent;
         this.style = style;
     }
 
@@ -48,11 +48,11 @@ public class TrackData {
         return isVisible;
     }
 
-    public boolean isActive() {
-        return isActive;
+    public boolean isCurrent() {
+        return isCurrent;
     }
 
-    public TrackData(int _id, int count, ArrayList<LatLng> latLngs, String name, String description, double north, double south, double east, double west, LatLngBounds latLngBounds) {
+    public TrackData(int _id, int count, ArrayList<LatLng> latLngs, String name, String description, double north, double south, double east, double west, LatLngBounds latLngBounds, boolean isVisible, String style) {
         this._id = _id;
         this.count = count;
         this.latLngs = latLngs;

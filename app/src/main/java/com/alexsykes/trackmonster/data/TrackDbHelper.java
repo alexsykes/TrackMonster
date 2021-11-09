@@ -31,7 +31,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         // Get track data
-        String trackQuery = "SELECT * FROM tracks WHERE _id = " + trackid + " ORDER BY _id ASC";
+        String trackQuery = "SELECT * FROM tracks WHERE _id = " + trackid ;
         Cursor cursor = db.rawQuery(trackQuery, null);
         int count = cursor.getCount();
 
@@ -39,11 +39,13 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         String name = "";
         String style = "Road";
         boolean isVisible = true;
+        boolean isCurrent = true;
         if(count>0) {
             cursor.moveToFirst();
             name = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME));
             description = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION));
             isVisible = cursor.getInt(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)) > 0;
+            isCurrent = cursor.getInt(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT)) > 0;
             style = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE));
         }
 
@@ -98,7 +100,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         latLngBounds = new LatLngBounds(southwest, northeast);
 
         int _id = trackid;
-        return new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, style);
+        return new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
     }
 
     public TrackData getCurrentTrackData() {
@@ -200,7 +202,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     public ArrayList<HashMap<String, String>> getShortTrackList() {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String query = "SELECT _id , name, isVisible FROM tracks  ORDER BY _id ASC";
+        String query = "SELECT _id , name, isVisible, isCurrent FROM tracks  ORDER BY _id ASC";
 
         // query = "SELECT * FROM tracks";
         Cursor cursor = db.rawQuery(query, null);
@@ -210,6 +212,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             tracks.put("id", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry._ID)));
             tracks.put("name", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME)));
             tracks.put("isVisible", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)));
+            tracks.put("isCurrent", cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT)));
             theTrackList.add(tracks);
         }
         cursor.close();

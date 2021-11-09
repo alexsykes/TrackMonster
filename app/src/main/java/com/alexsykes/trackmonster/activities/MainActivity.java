@@ -248,7 +248,7 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences.Editor editor = prefs.edit();
 
         isRecording = prefs.getBoolean("isRecording", false);
-        trackid = prefs.getInt("trackid", 1);
+       // trackid = prefs.getInt("trackid", 1);
         editor.putInt("trackid", 1);
         editor.putBoolean("canConnect", canConnect());
         editor.apply();
@@ -508,7 +508,7 @@ public class MainActivity extends AppCompatActivity
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt("trackid", trackid);
+        // editor.putInt("trackid", trackid);
         editor.apply();
     }
 

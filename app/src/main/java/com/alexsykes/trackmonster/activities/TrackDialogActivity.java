@@ -42,7 +42,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     String trackDescription;
     boolean isVisible, isCurrent;
     int trackID;
-    int trackIdFromPrefs;
     TrackDbHelper trackDbHelper;
     Intent intent;
     SharedPreferences prefs;
@@ -81,7 +80,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         task = intent.getExtras().getString("task");
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        trackIdFromPrefs = prefs.getInt("trackid", 1);
+        // trackIdFromPrefs = prefs.getInt("trackid", 1);
 
         // Get existing track details and show values
         if (task.equals("update")) {
@@ -90,8 +89,9 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
             nameTextInputLayout.getEditText().setText(trackData.getName());
             descriptionTextInputLayout.getEditText().setText(trackData.getDescription());
             isVisible = trackData.isVisible();
+            isCurrent = trackData.isCurrent();
             isVisibleCheckBox.setChecked(isVisible);
-            isCurrentCheckBox.setChecked(trackIdFromPrefs == trackID);
+            isCurrentCheckBox.setChecked(isCurrent);
             style = trackData.getStyle();
 
             switch (style) {
