@@ -160,7 +160,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     public int insertNewTrack(boolean isCurrent, String name, String trackDescription, boolean isVisible, String style) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        int last = 0;
+        int trackid = 0;
 
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, name);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, trackDescription);
@@ -173,12 +173,33 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             String sql = "SELECT last_insert_rowid()";
             Cursor result = db.rawQuery(sql, null);
             result.moveToFirst();
-            last = result.getInt(0);
+            trackid = result.getInt(0);
             result.close();
         }
 
         db.close();
-        return last;
+        return trackid;
+    }
+
+    public int insertNewTrack() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        int trackid = 0;
+
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, "New track");
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE, true);
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE, "Track");
+
+        db.insert("tracks", null, values);
+
+        String sql = "SELECT last_insert_rowid()";
+        Cursor result = db.rawQuery(sql, null);
+        result.moveToFirst();
+        trackid = result.getInt(0);
+        result.close();
+
+        db.close();
+        return trackid;
     }
 
     public void insertFirstTrack(String name) {

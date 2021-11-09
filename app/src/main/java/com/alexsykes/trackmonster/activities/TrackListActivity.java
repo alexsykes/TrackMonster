@@ -43,12 +43,6 @@ public class TrackListActivity extends AppCompatActivity {
         });
 
     }
-//
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        Log.i(TAG, "TrackListActivity: onResume: ");
-//    }
 
     @Override
     protected void onStart() {

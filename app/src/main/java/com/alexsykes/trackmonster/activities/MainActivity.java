@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final String KEY_IS_RECORDING = "isRecording";
+    private static final String KEY_TRACKID = "trackid";
     private boolean requestingLocationUpdates;
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
@@ -174,6 +175,7 @@ public class MainActivity extends AppCompatActivity
         lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
         cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         isRecording = (boolean) savedInstanceState.getSerializable(KEY_IS_RECORDING);
+        trackid = savedInstanceState.getInt("trackid");
     }
 
     @Override
@@ -183,6 +185,7 @@ public class MainActivity extends AppCompatActivity
         outState.putSerializable(KEY_IS_RECORDING, isRecording);
         outState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY,
                 requestingLocationUpdates);
+        outState.putInt(KEY_TRACKID, trackid);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
@@ -495,8 +498,13 @@ public class MainActivity extends AppCompatActivity
 
     private void cutAndNew() {
         Log.i(TAG, "cutAndNew: called");
+        TrackDbHelper trackDbHelper = new TrackDbHelper(this);
+        trackid = trackDbHelper.insertNewTrack();
 
-
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("trackid", trackid);
+        editor.apply();
     }
 
     // Location UI interaction
@@ -619,6 +627,5 @@ public class MainActivity extends AppCompatActivity
             requestingLocationUpdates = savedInstanceState.getBoolean(
                     REQUESTING_LOCATION_UPDATES_KEY);
         }
-
     }
 }
