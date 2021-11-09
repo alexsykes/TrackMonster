@@ -26,6 +26,11 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     @SuppressLint("Range")
     public TrackData getTrackData(int trackid){
         // Declare fields
+        String description = "";
+        String name = "";
+        String style = "Road";
+        boolean isVisible = true;
+        boolean isCurrent = true;
 
         // Get database and return data
         SQLiteDatabase db = this.getWritableDatabase();
@@ -34,12 +39,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         String trackQuery = "SELECT * FROM tracks WHERE _id = " + trackid ;
         Cursor cursor = db.rawQuery(trackQuery, null);
         int count = cursor.getCount();
-
-        String description = "";
-        String name = "";
-        String style = "Road";
-        boolean isVisible = true;
-        boolean isCurrent = true;
         if(count>0) {
             cursor.moveToFirst();
             name = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME));
@@ -103,6 +102,8 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         return new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
     }
 
+
+    @SuppressLint("Range")
     public TrackData getCurrentTrackData() {
         // Declare fields
 
@@ -119,12 +120,14 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         String name = "";
         String style = "Road";
         boolean isVisible = true;
+        boolean isCurrent = true;
         if (count > 0) {
             cursor.moveToFirst();
             trackid = cursor.getInt(cursor.getColumnIndex(TrackContract.TrackEntry._ID));
             name = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_NAME));
             description = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION));
             isVisible = cursor.getInt(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE)) > 0;
+            isCurrent = cursor.getInt(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT)) > 0;
             style = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE));
         }
 
@@ -179,7 +182,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         latLngBounds = new LatLngBounds(southwest, northeast);
 
         int _id = trackid;
-        return new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, style);
+        return new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
     }
 
     public TrackData[] getAllTrackData() {
