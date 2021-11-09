@@ -132,9 +132,9 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         String style = selected.getText().toString();
 
         if (task.equals("new")) {
-            trackID = trackDbHelper.insertNewTrack(isCurrent, name, trackDescription, isVisible, style);
+            trackDbHelper.insertNewTrack(isCurrent, name, trackDescription, isVisible, style);
         } else if (task.equals("update")) {
-            trackDbHelper.updateTrack(trackID, name, trackDescription, isVisible, style);
+            trackDbHelper.updateTrack(trackID, name, trackDescription, isVisible, isCurrent, style);
         }
 
         if (isCurrent) {

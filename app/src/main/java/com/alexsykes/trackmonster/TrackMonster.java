@@ -48,6 +48,7 @@ public class TrackMonster extends Application {
         // Database operations - https://www.tutorialspoint.com/android/android_sqlite_database.htm
         // First, get your database
         final String DATABASE_NAME = "monster.db";
+
         SQLiteDatabase db = openOrCreateDatabase(DATABASE_NAME, MODE_PRIVATE, null);
 
         // Create a String that contains the SQL statement to create the scores table
@@ -70,6 +71,7 @@ public class TrackMonster extends Application {
                 + TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION + " TEXT,  "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_STYLE + " TEXT,  "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE + " INTEGER , "
+                + TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT + " INTEGER , "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_CREATED + " TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                 + TrackContract.TrackEntry.COLUMN_TRACKS_UPDATED + " TEXT );";
 

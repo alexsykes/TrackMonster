@@ -49,22 +49,29 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     public TrackHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         preferences  = PreferenceManager.getDefaultSharedPreferences(viewGroup.getContext());
         trackid = preferences.getInt("trackid", 1);
+        Log.i("Info", "trackid: " + trackid);
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.track_row, viewGroup, false);
         TrackHolder trackHolder = new TrackHolder(v);
         return trackHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TrackHolder holder, int position) {
+    public void onBindViewHolder(@NonNull TrackHolder holder, final int position) {
         theTrack = theTrackList.get(position);
-        if(trackid == Integer.valueOf(theTrack.get("id"))) {
+        if (trackid == Integer.valueOf(theTrack.get("id"))) {
             holder.itemView.setBackgroundResource(R.color.list_highlist);
         }
-      //  holder.idTextView.setText(theTrack.get("id"));
-        // holder.createdTextView.setText(theCreated);
-        //  holder.isVisibleView.setImage("@drawable/ic_baseline_add_circle_24");
         holder.nameTextView.setText(theTrack.get("name"));
-        holder.bind(theTrack, listener);
+        // holder.bind(theTrack, listener);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i("Info", "onClick: " + theTrackList.get(position).get("id"));
+                String id = theTrackList.get(position).get("id");
+                Context context = view.getContext();
+                ((TrackListActivity) context).onClickCalled(id);
+            }
+        });
     }
 
     @Override
@@ -76,32 +83,30 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
 
         public TrackHolder(@NonNull View itemView) {
             super(itemView);
-//            idTextView = itemView.findViewById(R.id.id);
-//            isVisibleView = itemView.findViewById(R.id.isVisible);
-//            isCurrentView = itemView.findViewById(R.id.isActive);
 
             nameTextView = itemView.findViewById(R.id.name);
         }
 
-        public void bind(final HashMap<String, String> theTrial, final OnItemClickListener listener) {
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String id = theTrial.get("id");
-                    Context context = v.getContext();
-                    ((TrackListActivity) context).onClickCalled(id);
-                }
-            });
-            itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    String id = theTrial.get("id");
-                    setActive(id);
-                    Log.i("Info", "onLongClick: " + id);
-                    return true; // Halt execution of normal click
-                }
-            });
-        }
+//        public void bind(final HashMap<String, String> theTrial, final OnItemClickListener listener) {
+//            itemView.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    String id = theTrial.get("id");
+//                    Context context = v.getContext();
+//                    ((TrackListActivity) context).onClickCalled(id);
+//                }
+//            });
+//            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+//                @Override
+//                public boolean onLongClick(View v) {
+//                    String id = theTrial.get("id");
+//                    setActive(id);
+//                    Log.i("Info", "onLongClick: " + id);
+//                    itemView.setBackgroundColor(Color.GREEN);
+//                    return true; // Halt execution of normal click
+//                }
+//            });
+//        }
 
         private void setActive(String id) {
             int trackID = Integer.valueOf(id);

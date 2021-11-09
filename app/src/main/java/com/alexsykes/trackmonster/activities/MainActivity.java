@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleApiClient.ConnectionCallbacks {
     int updateInterval;
     int trackid;
+    public static final int DEFAULT_UPDATE_INTERVAL = 5;
 
     // Flags
     private boolean isRecording;
@@ -86,14 +87,13 @@ public class MainActivity extends AppCompatActivity
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final String KEY_IS_RECORDING = "isRecording";
     private static final String KEY_TRACKID = "trackid";
-    private boolean requestingLocationUpdates;
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
-    private FloatingActionButton fabRecord, fabCutAndNew;
-    public static final int DEFAULT_UPDATE_INTERVAL = 30;
-    public static final int FASTEST_UPDATE_INTERVAL = 30;
+    public static final int FASTEST_UPDATE_INTERVAL = 5;
+    private static final int ACTIVITY_REQUEST_CODE = 0;
     private static final int PERMISSION_FINE_LOCATION = 99;
     private static final String TAG = "Info";
+    TrackData currentTrack;
 
     private Location lastKnownLocation;
     private CameraPosition cameraPosition;
@@ -101,16 +101,19 @@ public class MainActivity extends AppCompatActivity
     private LocationRequest locationRequest;
     private TrackDbHelper trackDbHelper;
     private WaypointDbHelper waypointDbHelper;
-    private ArrayList<LatLng> currentTrack;
+    private FloatingActionButton fabRecord, fabCutAndNew;
+    private boolean requestingLocationUpdates;
 
     // Lifecycle starts
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         updateValuesFromBundle(savedInstanceState);
+        trackDbHelper = new TrackDbHelper(this);
         setContentView(R.layout.activity_main);
         getPrefs();
-        trackDbHelper = new TrackDbHelper(this);
+        currentTrack = getCurrentTrackData();
+        trackid = currentTrack.get_id();
         // UI components
         View mLayout = findViewById(R.id.map);
         fabRecord = findViewById(R.id.fabRecord);
@@ -126,15 +129,13 @@ public class MainActivity extends AppCompatActivity
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
+                Log.i(TAG, "onLocationResult - isRecording: " + isRecording);
 
-                if (isRecording) {
-                    Log.i(TAG, "Recording new location");
-                    if (locationResult == null) {
-                        return;
-                    }
-                    for (Location location : locationResult.getLocations()) {
-                        processNewLocation(location);
-                    }
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    processNewLocation(location);
                 }
             }
         };
@@ -158,9 +159,9 @@ public class MainActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
         Log.i(TAG, "MainActivity: onStart: ");
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        isRecording = prefs.getBoolean("isRecording", false);
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//        isRecording = prefs.getBoolean("isRecording", false);
+        getPrefs();
         if (isRecording == true) {
         } else {
             isRecording = false;
@@ -180,7 +181,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
         Log.i(TAG, "MainActivity: onSaveInstanceState: ");
         outState.putSerializable(KEY_IS_RECORDING, isRecording);
         outState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY,
@@ -196,6 +196,7 @@ public class MainActivity extends AppCompatActivity
             outState.putParcelable(KEY_CAMERA_POSITION, map.getCameraPosition());
             outState.putParcelable(KEY_LOCATION, lastKnownLocation);
         }
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -245,11 +246,12 @@ public class MainActivity extends AppCompatActivity
     private void getPrefs() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("canConnect", canConnect());
-        editor.apply();
 
         isRecording = prefs.getBoolean("isRecording", false);
         trackid = prefs.getInt("trackid", 1);
+        editor.putInt("trackid", 1);
+        editor.putBoolean("canConnect", canConnect());
+        editor.apply();
         updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
     }
 
@@ -270,11 +272,6 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-        // Update prefs
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("isRecording", isRecording);
-        editor.apply();
 
         // OnClickListener - toggle recording mode
         fabRecord.setOnClickListener(new View.OnClickListener() {
@@ -287,9 +284,16 @@ public class MainActivity extends AppCompatActivity
 
                 if (isRecording) {
                     fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_baseline_stop_24));
+                    startLocationUpdates();
                 } else {
                     fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_play_arrow_48));
+                    stopLocationUpdates();
                 }
+                // Update prefs
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putBoolean("isRecording", isRecording);
+                editor.apply();
             }
         });
 
@@ -326,7 +330,8 @@ public class MainActivity extends AppCompatActivity
     private void goTrackList() {
         Intent intent = new Intent(this, TrackListActivity.class);
         // intent.putExtra(EXTRA_MESSAGE, message);
-        startActivity(intent);
+        startActivityForResult(intent,
+                ACTIVITY_REQUEST_CODE);
     }
     private void goSettings() {
         Intent intent = new Intent(this, SettingsActivity.class);
@@ -367,7 +372,7 @@ public class MainActivity extends AppCompatActivity
 
         // Replace this
         waypointDbHelper = new WaypointDbHelper(this);
-        currentTrack = waypointDbHelper.getTrackPoints(trackid);
+        ArrayList<LatLng> currentTrack = waypointDbHelper.getTrackPoints(trackid);
         if (currentTrack.size() > 0) {
             LatLngBounds latLngBounds = showCurrentTrack(currentTrack);
             map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
@@ -527,8 +532,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void displayActiveTrack() {
-        TrackData trackData = trackDbHelper.getTrackData(trackid);
+    private TrackData getCurrentTrackData() {
+        TrackData trackData = trackDbHelper.getCurrentTrackData();
+        return trackData;
     }
 
     private void displayAllVisibleTracks() {
@@ -627,5 +633,6 @@ public class MainActivity extends AppCompatActivity
             requestingLocationUpdates = savedInstanceState.getBoolean(
                     REQUESTING_LOCATION_UPDATES_KEY);
         }
+        // if (savedInstanceState.keySet().contains(KEY_TRACKID)) { trackid = savedInstanceState.getInt(KEY_TRACKID); }
     }
 }
