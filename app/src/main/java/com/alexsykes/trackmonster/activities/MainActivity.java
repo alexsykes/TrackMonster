@@ -72,8 +72,8 @@ public class MainActivity extends AppCompatActivity
 
     // Flags
     private boolean isRecording;
-    private static final String KEY_IS_RECORDING = "isRecording";
     private boolean locationPermissionGranted;
+    private static final String REQUESTING_LOCATION_UPDATES_KEY = "requestingLocationUpdates";
 
     private GoogleMap map;
 
@@ -84,6 +84,8 @@ public class MainActivity extends AppCompatActivity
     // CONSTANTS
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private static final String KEY_IS_RECORDING = "isRecording";
+    private boolean requestingLocationUpdates;
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
     private FloatingActionButton fabRecord, fabCutAndNew;
@@ -104,6 +106,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        updateValuesFromBundle(savedInstanceState);
         setContentView(R.layout.activity_main);
         getPrefs();
         trackDbHelper = new TrackDbHelper(this);
@@ -178,6 +181,8 @@ public class MainActivity extends AppCompatActivity
         super.onSaveInstanceState(outState);
         Log.i(TAG, "MainActivity: onSaveInstanceState: ");
         outState.putSerializable(KEY_IS_RECORDING, isRecording);
+        outState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY,
+                requestingLocationUpdates);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
@@ -572,6 +577,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         Log.i(TAG, "startLocationUpdates: ");
+        requestingLocationUpdates = true;
         fusedLocationProviderClient.requestLocationUpdates(locationRequest,
                 locationCallback,
                 Looper.getMainLooper());
@@ -589,6 +595,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         Log.i(TAG, "stopLocationUpdates: ");
+        requestingLocationUpdates = false;
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
@@ -602,4 +609,16 @@ public class MainActivity extends AppCompatActivity
         mGoogleApiClient.connect();
     }
 
+    private void updateValuesFromBundle(Bundle savedInstanceState) {
+        if (savedInstanceState == null) {
+            return;
+        }
+
+        // Update the value of requestingLocationUpdates from the Bundle.
+        if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
+            requestingLocationUpdates = savedInstanceState.getBoolean(
+                    REQUESTING_LOCATION_UPDATES_KEY);
+        }
+
+    }
 }
