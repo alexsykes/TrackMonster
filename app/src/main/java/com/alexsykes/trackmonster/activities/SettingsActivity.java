@@ -9,7 +9,6 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
-import androidx.preference.SwitchPreference;
 
 import com.alexsykes.trackmonster.R;
 
@@ -46,33 +45,6 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void setup() {
-            // useGPSonly = prefs.getBoolean("useGPSonly", true);
-            trackingOn = prefs.getBoolean("trackingOn", true);
-
-/*            SwitchPreference useGPSPref = findPreference("useGPSonly");
-            assert useGPSPref != null;
-
-            useGPSPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    useGPSonly = Boolean.valueOf(newValue.toString());
-                    useGPSPref.setChecked(useGPSonly);
-                    return false;
-                }
-            });*/
-
-            SwitchPreference trackingOnPref = findPreference("trackingOn");
-            assert trackingOnPref != null;
-
-            trackingOnPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    trackingOn = Boolean.valueOf(newValue.toString());
-                    trackingOnPref.setChecked(trackingOn);
-                    return false;
-                }
-            });
-
             ListPreference intervalPref = findPreference("intervalString");
             assert intervalPref != null;
 

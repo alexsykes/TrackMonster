@@ -17,16 +17,18 @@
         android:id="@+id/fabCutAndNew"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:contentDescription="@string/fab_cut_and_new"
         android:layout_gravity="bottom|end"
         android:layout_margin="24dp"
         app:fabCustomSize="40dp"
-        android:contentDescription="@string/fab_start_recording"
+        android:tint="@color/white"
         app:srcCompat="@drawable/ic_cut_24" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabRecord"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:tint="@color/white"
         android:layout_gravity="bottom|end"
         android:layout_margin="14dp"
         app:fabCustomSize="60dp"

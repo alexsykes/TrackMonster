@@ -76,7 +76,6 @@ public class MainActivity extends AppCompatActivity
     private boolean locationPermissionGranted;
 
     private GoogleMap map;
-    private boolean fabCollapsed;
 
     // Google API
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -113,9 +112,6 @@ public class MainActivity extends AppCompatActivity
         fabRecord = findViewById(R.id.fabRecord);
         fabCutAndNew = findViewById(R.id.fabCutAndNew);
 
-        // Set up FAB menu
-        fabSetup();
-
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = new LocationRequest();
@@ -126,12 +122,15 @@ public class MainActivity extends AppCompatActivity
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                Log.i(TAG, "onLocationResult: called");
-                if (locationResult == null) {
-                    return;
-                }
-                for (Location location : locationResult.getLocations()) {
-                    processNewLocation(location);
+
+                if (isRecording) {
+                    Log.i(TAG, "Recording new location");
+                    if (locationResult == null) {
+                        return;
+                    }
+                    for (Location location : locationResult.getLocations()) {
+                        processNewLocation(location);
+                    }
                 }
             }
         };
@@ -140,76 +139,9 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-    }
 
-    private void fabSetup() {
-        fabRecord.setBackgroundTintList(AppCompatResources.getColorStateList(this, fab_colour_state_list));
-        fabCutAndNew.setBackgroundTintList(AppCompatResources.getColorStateList(this, small_fab_colour_state_list));
-        // FAB actions
-        if (isRecording) {
-            fabRecord.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_baseline_stop_24));
-        } else {
-            fabRecord.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_play_arrow_48));
-        }
-
-        // OnClickListener - toggle recording mode
-        fabRecord.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isRecording) {
-                    fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_baseline_stop_24));
-                } else {
-                    fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_play_arrow_48));
-                }
-                fabCutAndNew.hide();
-                isRecording = !isRecording;
-            }
-        });
-
-        // OnLongClickListener - show option to cut and create new track
-        fabRecord.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (isRecording) {
-                    fabRecord.show();
-                    fabCutAndNew.show();
-                    fabCutAndNew.animate().translationX(-(fabRecord.getCustomSize()));
-                }
-                return false;
-            }
-        });
-
-        fabCutAndNew.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fabCutAndNew.animate().translationX(0);
-                fabCutAndNew.hide();
-                if (isRecording) {
-                    cutAndNew();
-                }
-            }
-        });
-    }
-
-    private void cutAndNew() {
-    }
-
-    private void processNewLocation(Location location) {
-        waypointDbHelper = new WaypointDbHelper(this);
-        String logentry;
-        double lat = location.getLatitude();
-        double lng = location.getLongitude();
-        double speed = location.getSpeed();
-        double bearing = location.getBearing();
-        double alt = location.getAltitude();
-
-        waypointDbHelper.addLocation(trackid, lat, lng, speed, bearing, alt);
-
-        LatLng latLng = new LatLng(lat, lng);
-        map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-
-        logentry = "Status:\nLat: " + lat + "\nLng: " + lng + "\nSpeed: " + speed + "\nBearing: " + bearing;
-        Log.i("Status", logentry);
+        // Set up FAB menu
+        fabSetup();
     }
 
     @Override
@@ -221,16 +153,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        // startLocationUpdates();
         Log.i(TAG, "MainActivity: onStart: ");
-        fabCollapsed = true;
-        //noinspection StatementWithEmptyBody
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        isRecording = prefs.getBoolean("isRecording", false);
         if (isRecording == true) {
         } else {
             isRecording = false;
         }
-
-
         displayAllVisibleTracks();
     }
 
@@ -248,6 +178,12 @@ public class MainActivity extends AppCompatActivity
         super.onSaveInstanceState(outState);
         Log.i(TAG, "MainActivity: onSaveInstanceState: ");
         outState.putSerializable(KEY_IS_RECORDING, isRecording);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("isRecording", isRecording);
+        editor.apply();
+
         if (map != null) {
             outState.putParcelable(KEY_CAMERA_POSITION, map.getCameraPosition());
             outState.putParcelable(KEY_LOCATION, lastKnownLocation);
@@ -274,14 +210,33 @@ public class MainActivity extends AppCompatActivity
                 return super.onOptionsItemSelected(item);
         }
     }
-
     // Lifecycle ends
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        // Reference version has super call missing with locationPermissionGranted mutations as below
+        // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // locationPermissionGranted = false;
+        switch (requestCode) {
+            case PERMISSION_FINE_LOCATION:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //  locationPermissionGranted = true;
+                } else {
+                    Toast.makeText(this, "Permissions needed", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            default:
+        }
+        updateLocationUI();
+    }
 
     // Setup
     private void getPrefs() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("useGPSonly", true);
         editor.putBoolean("canConnect", canConnect());
         editor.apply();
 
@@ -290,6 +245,69 @@ public class MainActivity extends AppCompatActivity
         updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
     }
 
+    private void fabSetup() {
+        fabRecord.setBackgroundTintList(AppCompatResources.getColorStateList(this, fab_colour_state_list));
+        fabCutAndNew.setBackgroundTintList(AppCompatResources.getColorStateList(this, small_fab_colour_state_list));
+        fabRecord.setColorFilter(Color.WHITE);
+        fabCutAndNew.setColorFilter(Color.WHITE);
+        // FAB actions
+        if (isRecording) {
+            fabRecord.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_pause_24));
+            startLocationUpdates();
+            isRecording = true;
+        } else {
+            fabRecord.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_play_arrow_48));
+            stopLocationUpdates();
+            isRecording = false;
+        }
+
+
+        // Update prefs
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("isRecording", isRecording);
+        editor.apply();
+
+        // OnClickListener - toggle recording mode
+        fabRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Flip to flag, hide the buttons
+                isRecording = !isRecording;
+                fabCutAndNew.hide();
+                Log.i(TAG, "fabRecord: onClick: isRecording " + isRecording);
+
+                if (isRecording) {
+                    fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_baseline_stop_24));
+                } else {
+                    fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_play_arrow_48));
+                }
+            }
+        });
+
+        // OnLongClickListener - show option to cut and create new track
+        fabRecord.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (isRecording) {
+                    fabRecord.show();
+                    fabCutAndNew.show();
+                    fabCutAndNew.animate().translationX(-(fabRecord.getCustomSize()));
+                }
+                return false;
+            }
+        });
+        fabCutAndNew.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fabCutAndNew.animate().translationX(0);
+                fabCutAndNew.hide();
+                if (isRecording) {
+                    cutAndNew();
+                }
+            }
+        });
+    }
     protected boolean canConnect() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
@@ -302,7 +320,6 @@ public class MainActivity extends AppCompatActivity
         // intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
     }
-
     private void goSettings() {
         Intent intent = new Intent(this, SettingsActivity.class);
         // intent.putExtra(EXTRA_MESSAGE, message);
@@ -343,38 +360,21 @@ public class MainActivity extends AppCompatActivity
         // Replace this
         waypointDbHelper = new WaypointDbHelper(this);
         currentTrack = waypointDbHelper.getTrackPoints(trackid);
-        if(currentTrack.size() > 0) {
+        if (currentTrack.size() > 0) {
             LatLngBounds latLngBounds = showCurrentTrack(currentTrack);
-            map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,1000, 1000, 3));
+            map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
         }
         // trackDbHelper = new TrackDbHelper(this);
     }
 
-    private LatLngBounds showCurrentTrack(ArrayList<LatLng> currentTrack) {
-        PolylineOptions polylineOptions = new PolylineOptions();
-        // Create polyline options with existing LatLng ArrayList
-        polylineOptions.addAll(currentTrack);
-        polylineOptions
-                .width(5)
-                .color(Color.BLUE);
-
-        map.addPolyline(polylineOptions);
-
-        LatLngBounds latLngBounds = calcBounds(currentTrack);
-        return latLngBounds;
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.i(TAG, "onConnected: restored");
     }
 
-    private void displayActiveTrack() {
-        TrackData trackData = trackDbHelper.getTrackData(trackid);
-    }
-
-    private void displayAllVisibleTracks() {
-        int numTracks;
-        LatLngBounds latLngBounds;
-        TrackData[] trackDataArray = trackDbHelper.getAllTrackData();
-        numTracks = trackDataArray.length;
-
-        latLngBounds = calcBounds(trackDataArray);
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i(TAG, "onConnected: suspended" + i);
     }
 
     // Overloaded methods returning LatLngBounds for TrackData
@@ -456,27 +456,45 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        // Reference version has super call missing with locationPermissionGranted mutations as below
-        // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        // locationPermissionGranted = false;
-        switch (requestCode) {
-            case PERMISSION_FINE_LOCATION:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //  locationPermissionGranted = true;
-                } else {
-                    Toast.makeText(this, "Permissions needed", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-            default:
-        }
-        updateLocationUI();
+    private LatLngBounds showCurrentTrack(ArrayList<LatLng> currentTrack) {
+        PolylineOptions polylineOptions = new PolylineOptions();
+        // Create polyline options with existing LatLng ArrayList
+        polylineOptions.addAll(currentTrack);
+        polylineOptions
+                .width(5)
+                .color(Color.BLUE);
+
+        map.addPolyline(polylineOptions);
+
+        LatLngBounds latLngBounds = calcBounds(currentTrack);
+        return latLngBounds;
     }
 
+    private void processNewLocation(Location location) {
+        waypointDbHelper = new WaypointDbHelper(this);
+        String logentry;
+        double lat = location.getLatitude();
+        double lng = location.getLongitude();
+        double speed = location.getSpeed();
+        double bearing = location.getBearing();
+        double alt = location.getAltitude();
+
+        waypointDbHelper.addLocation(trackid, lat, lng, speed, bearing, alt);
+
+        LatLng latLng = new LatLng(lat, lng);
+        map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
+        logentry = "Status:\nLat: " + lat + "\nLng: " + lng + "\nSpeed: " + speed + "\nBearing: " + bearing;
+        Log.i("Status", logentry);
+    }
+
+    private void cutAndNew() {
+        Log.i(TAG, "cutAndNew: called");
+
+
+    }
+
+    // Location UI interaction
     private void updateLocationUI() {
         if (map == null) {
             return;
@@ -496,15 +514,17 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        Log.i(TAG, "onConnected: restored");
+    private void displayActiveTrack() {
+        TrackData trackData = trackDbHelper.getTrackData(trackid);
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.i(TAG, "onConnected: suspended" + i);
+    private void displayAllVisibleTracks() {
+        int numTracks;
+        LatLngBounds latLngBounds;
+        TrackData[] trackDataArray = trackDbHelper.getAllTrackData();
+        numTracks = trackDataArray.length;
+
+        latLngBounds = calcBounds(trackDataArray);
     }
 
     private void getDeviceLastLocation() {
@@ -540,15 +560,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * Manipulates the map when it's available.
-     * The API invokes this callback when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user receives a prompt to install
-     * Play services inside the SupportMapFragment. The API invokes this method after the user has
-     * installed Google Play services and returned to the app.
-     */
     private void startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -566,15 +577,6 @@ public class MainActivity extends AppCompatActivity
                 Looper.getMainLooper());
     }
 
-    /**
-     * Manipulates the map when it's available.
-     * The API invokes this callback when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user receives a prompt to install
-     * Play services inside the SupportMapFragment. The API invokes this method after the user has
-     * installed Google Play services and returned to the app.
-     */
     private void stopLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -590,6 +592,7 @@ public class MainActivity extends AppCompatActivity
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
+    // Utility
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -598,6 +601,5 @@ public class MainActivity extends AppCompatActivity
                 .build();
         mGoogleApiClient.connect();
     }
-
 
 }

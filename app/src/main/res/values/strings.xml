@@ -46,4 +46,5 @@
     <string name="fab_start_recording">Start recording track</string>
     <string name="fab_stop_recording">Stop recording track</string>
     <string name="fab_pause_recording">Pause track recording</string>
+    <string name="fab_cut_and_new">Cut and start new track</string>
 </resources>

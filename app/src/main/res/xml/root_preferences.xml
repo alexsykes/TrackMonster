@@ -23,10 +23,6 @@
             android:defaultValue="false"
             android:key="useGPSonly"
             android:title="GPS only" />-->
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="trackingOn"
-            android:title="Following ON" />
         <ListPreference
             android:entries="@array/sample_rate_entries"
             android:entryValues="@array/sample_rate_values"
