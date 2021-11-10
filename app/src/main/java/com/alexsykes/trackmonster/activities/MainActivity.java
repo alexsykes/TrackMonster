@@ -228,14 +228,11 @@ public class MainActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        // Reference version has super call missing with locationPermissionGranted mutations as below
-        // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        // locationPermissionGranted = false;
         switch (requestCode) {
             case PERMISSION_FINE_LOCATION:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //  locationPermissionGranted = true;
                 } else {
                     Toast.makeText(this, "Permissions needed", Toast.LENGTH_SHORT).show();
                     finish();

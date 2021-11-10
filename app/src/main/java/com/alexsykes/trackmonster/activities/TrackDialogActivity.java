@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -68,11 +69,43 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         trackButton = findViewById(R.id.trackButton);
         roadButton = findViewById(R.id.roadButton);
         majorRoadButton = findViewById(R.id.majorRoadButton);
-        saveButton = findViewById(R.id.saveButton);
 
-        saveButton.setOnClickListener(new View.OnClickListener() {
+        // Add listeners for changes
+        nameTextInputLayout.getEditText().setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void onClick(View v) {
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    saveTrackDetails();
+                }
+            }
+        });
+
+        descriptionTextInputLayout.getEditText().setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    saveTrackDetails();
+                }
+            }
+        });
+
+        trackStyleGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                saveTrackDetails();
+            }
+        });
+
+        isVisibleCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                saveTrackDetails();
+            }
+        });
+
+        isCurrentCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 saveTrackDetails();
             }
         });
@@ -121,13 +154,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         }
     }
 
-//    @Override
-//    protected void onDestroy() {
-//        saveTrackDetails();
-//        Log.i(TAG, "onDestroy");
-//        super.onDestroy();
-//    }
-
     private void saveTrackDetails() {
         SharedPreferences.Editor editor = prefs.edit();
         name = nameTextInputLayout.getEditText().getText().toString();
@@ -146,6 +172,12 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
             trackDbHelper.updateTrack(trackID, name, trackDescription, isVisible, isCurrent, style);
         }
         trackDbHelper.close();
+    }
+
+    @Override
+    public void onStop() {
+        saveTrackDetails();
+        super.onStop();
     }
 
     @Override
