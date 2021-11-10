@@ -31,7 +31,7 @@ public class TrackData {
         this.west = west;
         this.latLngBounds = latLngBounds;
         this.isVisible = isVisible;
-        this.isCurrent = this.isCurrent;
+        this.isCurrent = isCurrent;
         this.style = style;
     }
 

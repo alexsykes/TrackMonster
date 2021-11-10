@@ -18,12 +18,10 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "monster.db";
     private static final int DATABASE_VERSION = 1;
-    private int trackid;
 
     public WaypointDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
     }
 
     @Override
@@ -63,6 +61,7 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
 
             db.insertWithOnConflict("waypoints", null, values, SQLiteDatabase.CONFLICT_REPLACE);
         }
+        // db.close();
     }
 
     public void addLocation(int trackid, double lat, double lng, double speed, double bearing, double alt) {
@@ -76,6 +75,7 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
         values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT, alt);
 
         db.insert("waypoints", null, values);
+        // db.close();
     }
 
     public ArrayList<LatLng> getTrackPoints(int trackID){
@@ -91,6 +91,7 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
         }
 
         result.close();
+        // db.close();
         return theWaypoints;
     }
 
@@ -99,6 +100,6 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
         String query = "UPDATE waypoints SET trackid = 3 WHERE trackid = '0'";
 
         db.execSQL(query);
-        db.close();
+        // db.close();
     }
 }

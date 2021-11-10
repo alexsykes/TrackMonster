@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleApiClient.ConnectionCallbacks {
     int updateInterval;
     int trackid;
-    public static final int DEFAULT_UPDATE_INTERVAL = 5;
+    public static final int DEFAULT_UPDATE_INTERVAL = 30;
 
     // Flags
     private boolean isRecording;
@@ -113,7 +113,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         getPrefs();
         currentTrack = getCurrentTrackData();
-        trackid = currentTrack.get_id();
         // UI components
         View mLayout = findViewById(R.id.map);
         fabRecord = findViewById(R.id.fabRecord);
@@ -166,6 +165,7 @@ public class MainActivity extends AppCompatActivity
         } else {
             isRecording = false;
         }
+        trackid = trackDbHelper.getCurrentTrackID();
         displayAllVisibleTracks();
     }
 
@@ -176,7 +176,6 @@ public class MainActivity extends AppCompatActivity
         lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
         cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         isRecording = (boolean) savedInstanceState.getSerializable(KEY_IS_RECORDING);
-        trackid = savedInstanceState.getInt("trackid");
     }
 
     @Override
@@ -185,7 +184,6 @@ public class MainActivity extends AppCompatActivity
         outState.putSerializable(KEY_IS_RECORDING, isRecording);
         outState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY,
                 requestingLocationUpdates);
-        outState.putInt(KEY_TRACKID, trackid);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
@@ -248,8 +246,6 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences.Editor editor = prefs.edit();
 
         isRecording = prefs.getBoolean("isRecording", false);
-       // trackid = prefs.getInt("trackid", 1);
-        editor.putInt("trackid", 1);
         editor.putBoolean("canConnect", canConnect());
         editor.apply();
         updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
@@ -484,6 +480,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void processNewLocation(Location location) {
+        trackid = trackDbHelper.getCurrentTrackID();
         waypointDbHelper = new WaypointDbHelper(this);
         String logentry;
         double lat = location.getLatitude();
@@ -501,15 +498,11 @@ public class MainActivity extends AppCompatActivity
         Log.i("Status", logentry);
     }
 
+    // Inserts new track the makes it current
     private void cutAndNew() {
         Log.i(TAG, "cutAndNew: called");
         TrackDbHelper trackDbHelper = new TrackDbHelper(this);
         trackid = trackDbHelper.insertNewTrack();
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = prefs.edit();
-        // editor.putInt("trackid", trackid);
-        editor.apply();
     }
 
     // Location UI interaction
@@ -633,6 +626,5 @@ public class MainActivity extends AppCompatActivity
             requestingLocationUpdates = savedInstanceState.getBoolean(
                     REQUESTING_LOCATION_UPDATES_KEY);
         }
-        // if (savedInstanceState.keySet().contains(KEY_TRACKID)) { trackid = savedInstanceState.getInt(KEY_TRACKID); }
     }
 }

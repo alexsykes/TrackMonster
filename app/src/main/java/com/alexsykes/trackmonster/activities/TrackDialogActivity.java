@@ -114,9 +114,9 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         saveTrackDetails();
         Log.i(TAG, "onDestroy");
+        super.onDestroy();
     }
 
     private void saveTrackDetails() {
@@ -136,12 +136,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         } else if (task.equals("update")) {
             trackDbHelper.updateTrack(trackID, name, trackDescription, isVisible, isCurrent, style);
         }
-
-        if (isCurrent) {
-            editor.putInt("trackid", trackID);
-            editor.apply();
-        }
-        finish();
+        trackDbHelper.close();
     }
 
     @Override
