@@ -65,7 +65,9 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
 
         values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT, lat);
         values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LNG, lng);
-        values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_NAME, "Test");
+        values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_SPEED, speed);
+        values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_BEARING, bearing);
+        values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_NAME, "");
         values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID, trackid);
         values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT, alt);
 

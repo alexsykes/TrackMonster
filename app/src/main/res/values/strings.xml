@@ -47,4 +47,5 @@
     <string name="fab_pause_recording">Pause track recording</string>
     <string name="fab_cut_and_new">Cut and start new track</string>
     <string name="save">Save</string>
+    <string name="add_waypoint">Add waypoint</string>
 </resources>

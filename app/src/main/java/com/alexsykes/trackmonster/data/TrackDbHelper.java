@@ -59,7 +59,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         double southmost = 0;
         double northmost = 0;
         LatLngBounds latLngBounds;
-        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+        ArrayList<LatLng> latLngs = new ArrayList<>();
         if(count > 0){
             cursor.moveToFirst();
             // Get initial values
@@ -99,13 +99,12 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         LatLng southwest = new LatLng(southmost, westmost);
         latLngBounds = new LatLngBounds(southwest, northeast);
 
-        int _id = trackid;
-        return new TrackData(_id, count, latLngs, name, description,
+        return new TrackData(trackid, latLngs, name, description,
                 northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
     }
 
     public int getCurrentTrackID() {
-        int trackid = 1;
+        int trackid;
         // Get database and return data
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -159,7 +158,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         double southmost = 0;
         double northmost = 0;
         LatLngBounds latLngBounds;
-        ArrayList<LatLng> latLngs = new ArrayList<LatLng>();
+        ArrayList<LatLng> latLngs = new ArrayList<>();
         if (count > 0) {
             cursor.moveToFirst();
             // Get initial values
@@ -200,7 +199,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         latLngBounds = new LatLngBounds(southwest, northeast);
 
         int _id = trackid;
-        return new TrackData(_id, count, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
+        return new TrackData(_id, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
     }
 
     public TrackData[] getAllTrackData() {
@@ -289,7 +288,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
         // Add new track
         ContentValues values = new ContentValues();
-        int trackid = 0;
+        int trackid;
 
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, "New track");
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE, true);
@@ -352,7 +351,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
         String query = "SELECT _id  FROM tracks WHERE isVisible = true ORDER BY _id ASC";
         Cursor cursor = db.rawQuery(query, null);
-        ArrayList<Integer> theTrackIndices = new ArrayList<Integer>();
+        ArrayList<Integer> theTrackIndices = new ArrayList<>();
         while (cursor.moveToNext()) {
             theTrackIndices.add(cursor.getInt(0));
         }
@@ -360,13 +359,13 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
         int count = theTrackIndices.size();
 
-        ArrayList<ArrayList<LatLng>> allTrackData = new ArrayList<ArrayList<LatLng>>();
+        ArrayList<ArrayList<LatLng>> allTrackData = new ArrayList<>();
         for(int i = 0; i<count; i++){
             int index = theTrackIndices.get(i);
             query = "SELECT lat, lng  FROM waypoints WHERE trackid = " + index + " ORDER BY _id ASC";
 
-            Cursor theWaypoints = db.rawQuery(query,null);
-            ArrayList<LatLng> theTrackData = new ArrayList<LatLng>();
+            Cursor theWaypoints = db.rawQuery(query, null);
+            ArrayList<LatLng> theTrackData = new ArrayList<>();
             while(theWaypoints.moveToNext()) {
                 theTrackData.add(new LatLng(theWaypoints.getDouble(0), theWaypoints.getDouble(1)));
             }

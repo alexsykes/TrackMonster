@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 public class TrackData {
     private final int _id;
-    private final int count;
     private final ArrayList<LatLng> latLngs;
     private final String name;
     private final String description;
@@ -16,12 +15,12 @@ public class TrackData {
     private final double east;
     private final double west;
     private final LatLngBounds latLngBounds;
-    private boolean isVisible, isCurrent;
-    private String style;
+    private final boolean isVisible;
+    private final boolean isCurrent;
+    private final String style;
 
-    public TrackData(int _id, int count, ArrayList<LatLng> latLngs, String name, String description, double north, double south, double east, double west, LatLngBounds latLngBounds, boolean isVisible, boolean isCurrent, String style) {
+    public TrackData(int _id, ArrayList<LatLng> latLngs, String name, String description, double north, double south, double east, double west, LatLngBounds latLngBounds, boolean isVisible, boolean isCurrent, String style) {
         this._id = _id;
-        this.count = count;
         this.latLngs = latLngs;
         this.name = name;
         this.description = description;
@@ -52,23 +51,6 @@ public class TrackData {
         return isCurrent;
     }
 
-    public TrackData(int _id, int count, ArrayList<LatLng> latLngs, String name, String description, double north, double south, double east, double west, LatLngBounds latLngBounds, boolean isVisible, String style) {
-        this._id = _id;
-        this.count = count;
-        this.latLngs = latLngs;
-        this.name = name;
-        this.description = description;
-        this.north = north;
-        this.south = south;
-        this.east = east;
-        this.west = west;
-        this.latLngBounds = latLngBounds;
-    }
-
-
-    public int getCount() {
-        return count;
-    }
 
     public ArrayList<LatLng> getLatLngs() {
         return latLngs;

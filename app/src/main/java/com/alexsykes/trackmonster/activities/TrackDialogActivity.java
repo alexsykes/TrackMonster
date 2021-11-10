@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -37,7 +35,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     CheckBox isCurrentCheckBox;
     RadioGroup trackStyleGroup;
     RadioButton undefinedButton, trackButton, roadButton, majorRoadButton;
-    Button saveButton;
     String name;
     String task;
     String style;
@@ -49,8 +46,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     SharedPreferences prefs;
     TrackData trackData;
 
-    // Map components
-    private View mLayout;
     private GoogleMap map;
 
     @Override
@@ -63,7 +58,8 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         descriptionTextInputLayout = findViewById(R.id.track_detail_text_input);
         isVisibleCheckBox = findViewById(R.id.track_visibility_checkBox);
         isCurrentCheckBox = findViewById(R.id.track_active_checkBox);
-        mLayout = findViewById(R.id.trackMap);
+        // Map components
+        View mLayout = findViewById(R.id.trackMap);
         trackStyleGroup = findViewById(R.id.trackStyleGroup);
         undefinedButton = findViewById(R.id.undefinedButton);
         trackButton = findViewById(R.id.trackButton);
@@ -71,44 +67,23 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         majorRoadButton = findViewById(R.id.majorRoadButton);
 
         // Add listeners for changes
-        nameTextInputLayout.getEditText().setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    saveTrackDetails();
-                }
-            }
-        });
-
-        descriptionTextInputLayout.getEditText().setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    saveTrackDetails();
-                }
-            }
-        });
-
-        trackStyleGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
+        nameTextInputLayout.getEditText().setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
                 saveTrackDetails();
             }
         });
 
-        isVisibleCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        descriptionTextInputLayout.getEditText().setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
                 saveTrackDetails();
             }
         });
 
-        isCurrentCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                saveTrackDetails();
-            }
-        });
+        trackStyleGroup.setOnCheckedChangeListener((group, checkedId) -> saveTrackDetails());
+
+        isVisibleCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> saveTrackDetails());
+
+        isCurrentCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> saveTrackDetails());
 
         // Get the SupportMapFragment and request notification when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -155,7 +130,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void saveTrackDetails() {
-        SharedPreferences.Editor editor = prefs.edit();
         name = nameTextInputLayout.getEditText().getText().toString();
         trackDescription = descriptionTextInputLayout.getEditText().getText().toString();
         isVisible = isVisibleCheckBox.isChecked();
@@ -163,7 +137,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
 
         int radioButtonID = trackStyleGroup.getCheckedRadioButtonId();
         RadioButton selected = trackStyleGroup.findViewById(radioButtonID);
-        int idx = trackStyleGroup.indexOfChild(selected);
         String style = selected.getText().toString();
 
         if (task.equals("new")) {
@@ -198,7 +171,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void displayTrack() {
-        final int COLOR_WHITE_ARGB = 0xffffffff;
         final int COLOR_DARK_GREEN_ARGB = 0xff388E3C;
         final int COLOR_LIGHT_GREEN_ARGB = 0xff81C784;
         final int COLOR_DARK_ORANGE_ARGB = 0xffF57F17;
@@ -212,9 +184,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         PolylineOptions polylineOptions = new PolylineOptions();
         // Create polyline options with existing LatLng ArrayList
         polylineOptions.addAll(latLngs);
-        //polylineOptions
-        //        .width(5)
-        //        .color(Color.BLUE);
+
 
         Polyline polyline = map.addPolyline(polylineOptions);
         switch (style) {

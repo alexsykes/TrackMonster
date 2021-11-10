@@ -1,6 +1,7 @@
 package com.alexsykes.trackmonster.data;
 
 import android.provider.BaseColumns;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class WaypointContract extends AppCompatActivity {
@@ -20,5 +21,7 @@ public class WaypointContract extends AppCompatActivity {
         public final static String COLUMN_WAYPOINTS_UPDATED = "updated";
         public final static String COLUMN_WAYPOINTS_NAME = "name";
         public final static String COLUMN_WAYPOINTS_MARKER = "marker";
+        public final static String COLUMN_WAYPOINTS_SPEED = "speed";
+        public final static String COLUMN_WAYPOINTS_BEARING = "bearing";
     }
 }

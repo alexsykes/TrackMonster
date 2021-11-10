@@ -19,7 +19,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -49,7 +49,6 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -73,9 +72,9 @@ public class MainActivity extends AppCompatActivity
     // Flags
     private boolean isRecording;
     private boolean locationPermissionGranted;
+    String statusText;
     private static final String REQUESTING_LOCATION_UPDATES_KEY = "requestingLocationUpdates";
 
-    private GoogleMap map;
 
     // Google API
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -91,6 +90,7 @@ public class MainActivity extends AppCompatActivity
     public static final int FASTEST_UPDATE_INTERVAL = 5;
     private static final int ACTIVITY_REQUEST_CODE = 0;
     private static final int PERMISSION_FINE_LOCATION = 99;
+    private boolean requestingLocationUpdates;
     private static final String TAG = "Info";
     TrackData currentTrack;
 
@@ -100,28 +100,33 @@ public class MainActivity extends AppCompatActivity
     private LocationRequest locationRequest;
     private TrackDbHelper trackDbHelper;
     private WaypointDbHelper waypointDbHelper;
-    private FloatingActionButton fabRecord, fabCutAndNew;
-    private boolean requestingLocationUpdates;
+    // UI
+    private FloatingActionButton fabRecord, fabCutAndNew, fabAddWaypoint;
+    private TextView statusTextView;
+    private GoogleMap map;
 
     // Lifecycle starts
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
         updateValuesFromBundle(savedInstanceState);
         trackDbHelper = new TrackDbHelper(this);
-        setContentView(R.layout.activity_main);
         getPrefs();
         currentTrack = getCurrentTrackData();
+        trackid = currentTrack.get_id();
         // UI components
-        View mLayout = findViewById(R.id.map);
+        // View mLayout = findViewById(R.id.map);
         fabRecord = findViewById(R.id.fabRecord);
+        statusTextView = findViewById(R.id.statusTextView);
         fabCutAndNew = findViewById(R.id.fabCutAndNew);
+        fabAddWaypoint = findViewById(R.id.fabAddWaypoint);
 
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = new LocationRequest();
-        locationRequest.setInterval(1000 * updateInterval);
-        locationRequest.setFastestInterval(1000 * FASTEST_UPDATE_INTERVAL);
+        locationRequest.setInterval(1000L * updateInterval);
+        locationRequest.setFastestInterval(1000L * FASTEST_UPDATE_INTERVAL);
         locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
         locationCallback = new LocationCallback() {
@@ -139,6 +144,7 @@ public class MainActivity extends AppCompatActivity
         // Get the SupportMapFragment and request notification when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
         // Set up FAB menu
@@ -159,10 +165,16 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         Log.i(TAG, "MainActivity: onStart: ");
         getPrefs();
-        if (isRecording == true) {
+        if (isRecording) {
+            statusText = "Recording";
         } else {
             isRecording = false;
+            statusText = "Paused";
         }
+        if (trackid == 0) {
+            statusText = statusText + "No track selected";
+        }
+        statusTextView.setText(statusText);
         trackid = trackDbHelper.getCurrentTrackID();
         displayAllVisibleTracks();
     }
@@ -172,35 +184,6 @@ public class MainActivity extends AppCompatActivity
         super.onPause();
         stopLocationUpdates();
     }
-
-
-//    @Override
-//    public void onRestoreInstanceState(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
-//        super.onRestoreInstanceState(savedInstanceState, persistentState);
-//        Log.i(TAG, "MainActivity: onRestoreInstanceState: ");
-//        lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
-//        cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
-//        isRecording = (boolean) savedInstanceState.getSerializable(KEY_IS_RECORDING);
-//    }
-//
-//    @Override
-//    protected void onSaveInstanceState(Bundle outState) {
-//        Log.i(TAG, "MainActivity: onSaveInstanceState: ");
-//        outState.putSerializable(KEY_IS_RECORDING, isRecording);
-//        outState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY,
-//                requestingLocationUpdates);
-//
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//        SharedPreferences.Editor editor = prefs.edit();
-//        editor.putBoolean("isRecording", isRecording);
-//        editor.apply();
-//
-//        if (map != null) {
-//            outState.putParcelable(KEY_CAMERA_POSITION, map.getCameraPosition());
-//            outState.putParcelable(KEY_LOCATION, lastKnownLocation);
-//        }
-//        super.onSaveInstanceState(outState);
-//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -230,14 +213,11 @@ public class MainActivity extends AppCompatActivity
                                            @NonNull int[] grantResults) {
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case PERMISSION_FINE_LOCATION:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                } else {
-                    Toast.makeText(this, "Permissions needed", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-            default:
+        if (requestCode == PERMISSION_FINE_LOCATION) {
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permissions needed", Toast.LENGTH_SHORT).show();
+                finish();
+            }
         }
         updateLocationUI();
     }
@@ -256,8 +236,10 @@ public class MainActivity extends AppCompatActivity
     private void fabSetup() {
         fabRecord.setBackgroundTintList(AppCompatResources.getColorStateList(this, fab_colour_state_list));
         fabCutAndNew.setBackgroundTintList(AppCompatResources.getColorStateList(this, small_fab_colour_state_list));
+        fabAddWaypoint.setBackgroundTintList(AppCompatResources.getColorStateList(this, small_fab_colour_state_list));
         fabRecord.setColorFilter(Color.WHITE);
         fabCutAndNew.setColorFilter(Color.WHITE);
+        fabAddWaypoint.setColorFilter(Color.WHITE);
         // FAB actions
         if (isRecording) {
             fabRecord.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_pause_24));
@@ -270,54 +252,64 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-
         // OnClickListener - toggle recording mode
-        fabRecord.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Flip to flag, hide the buttons
-                isRecording = !isRecording;
-                fabCutAndNew.hide();
-                Log.i(TAG, "fabRecord: onClick: isRecording " + isRecording);
+        fabRecord.setOnClickListener(v -> {
+            // Flip to flag, hide the buttons
+            isRecording = !isRecording;
+            fabCutAndNew.hide();
+            fabAddWaypoint.hide();
+            Log.i(TAG, "fabRecord: onClick: isRecording " + isRecording);
 
-                if (isRecording) {
-                    fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_baseline_stop_24));
-                    startLocationUpdates();
-                } else {
-                    fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_play_arrow_48));
-                    stopLocationUpdates();
-                }
-                // Update prefs
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean("isRecording", isRecording);
-                editor.apply();
+            if (isRecording) {
+                fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_baseline_stop_24));
+                startLocationUpdates();
+            } else {
+                fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_play_arrow_48));
+                stopLocationUpdates();
             }
+            // Update prefs
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("isRecording", isRecording);
+            editor.apply();
         });
 
         // OnLongClickListener - show option to cut and create new track
-        fabRecord.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (isRecording) {
-                    fabRecord.show();
-                    fabCutAndNew.show();
-                    fabCutAndNew.animate().translationX(-(fabRecord.getCustomSize()));
-                }
-                return false;
+        fabRecord.setOnLongClickListener(v -> {
+            if (isRecording) {
+                fabRecord.show();
+                fabCutAndNew.show();
+                fabAddWaypoint.show();
+                fabCutAndNew.animate().translationX(-(fabRecord.getCustomSize()));
+                fabAddWaypoint.animate().translationX(-((fabRecord.getCustomSize() + fabRecord.getCustomSize())));
+            }
+            return false;
+        });
+
+        fabCutAndNew.setOnClickListener(v -> {
+            fabCutAndNew.animate().translationX(0);
+            fabCutAndNew.hide();
+            fabAddWaypoint.animate().translationX(0);
+            fabAddWaypoint.hide();
+            if (isRecording) {
+                cutAndNew();
             }
         });
-        fabCutAndNew.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fabCutAndNew.animate().translationX(0);
-                fabCutAndNew.hide();
-                if (isRecording) {
-                    cutAndNew();
-                }
+
+        fabAddWaypoint.setOnClickListener(v -> {
+            fabCutAndNew.animate().translationX(0);
+            fabCutAndNew.hide();
+            fabAddWaypoint.animate().translationX(0);
+            fabAddWaypoint.hide();
+            if (isRecording) {
+                addWaypoint();
             }
         });
     }
+
+    private void addWaypoint() {
+    }
+
     protected boolean canConnect() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
@@ -394,7 +386,6 @@ public class MainActivity extends AppCompatActivity
         LatLng northeast, southwest;
 
         numTracks = trackDataArray.length;
-        LatLngBounds latLngBounds;
         TrackData currentTrackData;
         double westmost = trackDataArray[0].getWest();
         double eastmost = trackDataArray[0].getEast();
@@ -477,8 +468,7 @@ public class MainActivity extends AppCompatActivity
 
         map.addPolyline(polylineOptions);
 
-        LatLngBounds latLngBounds = calcBounds(currentTrack);
-        return latLngBounds;
+        return calcBounds(currentTrack);
     }
 
     private void processNewLocation(Location location) {
@@ -528,15 +518,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     private TrackData getCurrentTrackData() {
-        TrackData trackData = trackDbHelper.getCurrentTrackData();
-        return trackData;
+        return trackDbHelper.getCurrentTrackData();
     }
 
     private void displayAllVisibleTracks() {
-        int numTracks;
         LatLngBounds latLngBounds;
         TrackData[] trackDataArray = trackDbHelper.getAllTrackData();
-        numTracks = trackDataArray.length;
 
         latLngBounds = calcBounds(trackDataArray);
     }
@@ -549,23 +536,20 @@ public class MainActivity extends AppCompatActivity
         try {
             if (locationPermissionGranted) {
                 Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            lastKnownLocation = task.getResult();
-                            Log.i(TAG, "getDeviceLastLocation: onComplete: lastKnownLocation");
-                            if (lastKnownLocation != null) {
-                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                            }
-                        } else {
-                            Log.d(TAG, "Current location is null. Using defaults.");
-                            Log.e(TAG, "Exception: %s", task.getException());
-                            // map.moveCamera(CameraUpdateFactory
-                            //         .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
-                            map.getUiSettings().setMyLocationButtonEnabled(false);
+                locationResult.addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Set the map's camera position to the current location of the device.
+                        lastKnownLocation = task.getResult();
+                        Log.i(TAG, "getDeviceLastLocation: onComplete: lastKnownLocation");
+                        if (lastKnownLocation != null) {
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
                         }
+                    } else {
+                        Log.d(TAG, "Current location is null. Using defaults.");
+                        Log.e(TAG, "Exception: %s", task.getException());
+                        // map.moveCamera(CameraUpdateFactory
+                        //         .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+                        map.getUiSettings().setMyLocationButtonEnabled(false);
                     }
                 });
             }

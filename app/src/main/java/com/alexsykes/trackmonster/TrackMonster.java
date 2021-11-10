@@ -55,11 +55,14 @@ public class TrackMonster extends Application {
         String SQL_CREATE_WAYPOINT_TABLE = "CREATE TABLE IF NOT EXISTS " + WaypointContract.WaypointEntry.TABLE_NAME + " ("
                 + WaypointContract.WaypointEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID + " INTEGER , "
+                + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_MARKER + " INTEGER , "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT + " REAL, "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_NAME + " TEXT NOT NULL, "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_CREATED + " TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_UPDATED + " TEXT , "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LNG + " REAL , "
+                + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_SPEED + " REAL , "
+                + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_BEARING + " REAL , "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT + " REAL );";
 
         // Execute the SQL statement

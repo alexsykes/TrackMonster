@@ -6,7 +6,6 @@ import android.os.Bundle;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.ListPreference;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
@@ -32,15 +31,11 @@ public class SettingsActivity extends AppCompatActivity {
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         SharedPreferences prefs;
-        boolean useGPSonly;
-        boolean trackingOn;
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
-            SharedPreferences.Editor editor = prefs.edit();
-
             setup();
         }
 
@@ -48,17 +43,14 @@ public class SettingsActivity extends AppCompatActivity {
             ListPreference intervalPref = findPreference("intervalString");
             assert intervalPref != null;
 
-            intervalPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    SharedPreferences.Editor editor = prefs.edit();
-                    intervalPref.setValue(newValue.toString());
-                    int samplingInterval = Integer.parseInt(newValue.toString());
-                    editor.putInt("interval", samplingInterval);
-                    editor.putString("intervalString", newValue.toString());
-                    editor.apply();
-                    return false;
-                }
+            intervalPref.setOnPreferenceChangeListener((preference, newValue) -> {
+                SharedPreferences.Editor editor = prefs.edit();
+                intervalPref.setValue(newValue.toString());
+                int samplingInterval = Integer.parseInt(newValue.toString());
+                editor.putInt("interval", samplingInterval);
+                editor.putString("intervalString", newValue.toString());
+                editor.apply();
+                return false;
             });
         }
 

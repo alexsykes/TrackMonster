@@ -3,7 +3,6 @@ package com.alexsykes.trackmonster.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,7 +20,6 @@ public class TrackListActivity extends AppCompatActivity {
     TrackDbHelper trackDbHelper;
     ArrayList<HashMap<String, String>> theTrackList;
     RecyclerView trackView;
-    private static final int TEXT_REQUEST = 1;
     private static final String TAG = "Info";
 
     @Override
@@ -32,13 +30,10 @@ public class TrackListActivity extends AppCompatActivity {
         trackDbHelper = new TrackDbHelper(this);
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), TrackDialogActivity.class);
-                intent.putExtra("task", "new");
-                startActivity(intent);
-            }
+        fab.setOnClickListener(view -> {
+            Intent intent = new Intent(getApplicationContext(), TrackDialogActivity.class);
+            intent.putExtra("task", "new");
+            startActivity(intent);
         });
     }
 
@@ -77,8 +72,5 @@ public class TrackListActivity extends AppCompatActivity {
     private void initializeAdapter() {
         TrackListAdapter adapter = new TrackListAdapter(theTrackList);
         trackView.setAdapter(adapter);
-    }
-    public interface OnItemClickListener {
-        void onItemClick(HashMap<String, String> theTrackList);
     }
 }
