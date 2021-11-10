@@ -40,21 +40,20 @@ public class TrackListActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // populateTrackList();
+        populateTrackList();
         Log.i(TAG, "TrackListActivity: onStart: ");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        populateTrackList();
-        Log.i(TAG, "TrackListActivity: onStart: ");
+        // populateTrackList();
+        Log.i(TAG, "TrackListActivity: onResume: ");
     }
 
     public void onClickCalled(String trackid) {

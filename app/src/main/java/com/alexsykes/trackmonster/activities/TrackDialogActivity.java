@@ -3,8 +3,8 @@ package com.alexsykes.trackmonster.activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -36,6 +36,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     CheckBox isCurrentCheckBox;
     RadioGroup trackStyleGroup;
     RadioButton undefinedButton, trackButton, roadButton, majorRoadButton;
+    Button saveButton;
     String name;
     String task;
     String style;
@@ -67,6 +68,14 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         trackButton = findViewById(R.id.trackButton);
         roadButton = findViewById(R.id.roadButton);
         majorRoadButton = findViewById(R.id.majorRoadButton);
+        saveButton = findViewById(R.id.saveButton);
+
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveTrackDetails();
+            }
+        });
 
         // Get the SupportMapFragment and request notification when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -112,12 +121,12 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        saveTrackDetails();
-        Log.i(TAG, "onDestroy");
-        super.onDestroy();
-    }
+//    @Override
+//    protected void onDestroy() {
+//        saveTrackDetails();
+//        Log.i(TAG, "onDestroy");
+//        super.onDestroy();
+//    }
 
     private void saveTrackDetails() {
         SharedPreferences.Editor editor = prefs.edit();

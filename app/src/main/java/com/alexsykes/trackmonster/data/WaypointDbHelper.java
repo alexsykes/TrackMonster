@@ -2,13 +2,10 @@ package com.alexsykes.trackmonster.data;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-
-import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -21,7 +18,6 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
 
     public WaypointDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     @Override
@@ -37,8 +33,7 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
     public void generateRandomData(int itemCount){
         SQLiteDatabase db = this.getWritableDatabase();
         String name;
-//        double lat = (0.5 - Math.random()) * 15;
-//        double lng = (0.5 - Math.random()) * 15;
+
         double lat = 22;
         double lng = 40;
         double alt;

@@ -15,7 +15,6 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -128,8 +127,6 @@ public class MainActivity extends AppCompatActivity
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                Log.i(TAG, "onLocationResult - isRecording: " + isRecording);
-
                 if (locationResult == null) {
                     return;
                 }
@@ -151,6 +148,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        if (requestingLocationUpdates) {
+            startLocationUpdates();
+        }
         Log.i(TAG, "MainActivity: onResume: ");
     }
 
@@ -158,8 +158,6 @@ public class MainActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
         Log.i(TAG, "MainActivity: onStart: ");
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//        isRecording = prefs.getBoolean("isRecording", false);
         getPrefs();
         if (isRecording == true) {
         } else {
@@ -170,32 +168,39 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRestoreInstanceState(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
-        super.onRestoreInstanceState(savedInstanceState, persistentState);
-        Log.i(TAG, "MainActivity: onRestoreInstanceState: ");
-        lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
-        cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
-        isRecording = (boolean) savedInstanceState.getSerializable(KEY_IS_RECORDING);
+    protected void onPause() {
+        super.onPause();
+        stopLocationUpdates();
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        Log.i(TAG, "MainActivity: onSaveInstanceState: ");
-        outState.putSerializable(KEY_IS_RECORDING, isRecording);
-        outState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY,
-                requestingLocationUpdates);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("isRecording", isRecording);
-        editor.apply();
-
-        if (map != null) {
-            outState.putParcelable(KEY_CAMERA_POSITION, map.getCameraPosition());
-            outState.putParcelable(KEY_LOCATION, lastKnownLocation);
-        }
-        super.onSaveInstanceState(outState);
-    }
+//    @Override
+//    public void onRestoreInstanceState(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+//        super.onRestoreInstanceState(savedInstanceState, persistentState);
+//        Log.i(TAG, "MainActivity: onRestoreInstanceState: ");
+//        lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
+//        cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+//        isRecording = (boolean) savedInstanceState.getSerializable(KEY_IS_RECORDING);
+//    }
+//
+//    @Override
+//    protected void onSaveInstanceState(Bundle outState) {
+//        Log.i(TAG, "MainActivity: onSaveInstanceState: ");
+//        outState.putSerializable(KEY_IS_RECORDING, isRecording);
+//        outState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY,
+//                requestingLocationUpdates);
+//
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//        SharedPreferences.Editor editor = prefs.edit();
+//        editor.putBoolean("isRecording", isRecording);
+//        editor.apply();
+//
+//        if (map != null) {
+//            outState.putParcelable(KEY_CAMERA_POSITION, map.getCameraPosition());
+//            outState.putParcelable(KEY_LOCATION, lastKnownLocation);
+//        }
+//        super.onSaveInstanceState(outState);
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
