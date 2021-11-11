@@ -25,19 +25,29 @@
         android:textAlignment="textStart"
         android:textSize="18sp" />
 
-<!--    <ImageButton
-        android:id="@+id/isVisible"
+    <CheckBox
+        android:id="@+id/isVisCheckbox"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="0"
-        android:src="@drawable/ic_baseline_visibility_24" />
+        android:layout_height="wrap_content" />
 
-    <ImageButton
-        android:id="@+id/isActive"
+    <RadioButton
+        android:id="@+id/isCurrentRadioButton"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="0"
-        app:srcCompat="@drawable/ic_baseline_add_circle_24" />-->
+        android:layout_height="wrap_content" />
+
+    <!--    <ImageButton
+            android:id="@+id/isVisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:src="@drawable/ic_baseline_visibility_24" />
+
+        <ImageButton
+            android:id="@+id/isActive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            app:srcCompat="@drawable/ic_baseline_add_circle_24" />-->
 
 
 </LinearLayout>

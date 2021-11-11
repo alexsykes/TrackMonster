@@ -69,8 +69,17 @@ public class TrackListActivity extends AppCompatActivity {
         trackView.setHasFixedSize(true);
         initializeAdapter();
     }
+
     private void initializeAdapter() {
         TrackListAdapter adapter = new TrackListAdapter(theTrackList);
         trackView.setAdapter(adapter);
+    }
+
+    public void updateVisible(int trackid, boolean visibility) {
+        trackDbHelper.setVisible(trackid, visibility);
+    }
+
+    public void updateCurrent(int trackid) {
+        trackDbHelper.setCurrent(trackid);
     }
 }

@@ -366,7 +366,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
             Cursor theWaypoints = db.rawQuery(query, null);
             ArrayList<LatLng> theTrackData = new ArrayList<>();
-            while(theWaypoints.moveToNext()) {
+            while (theWaypoints.moveToNext()) {
                 theTrackData.add(new LatLng(theWaypoints.getDouble(0), theWaypoints.getDouble(1)));
             }
             allTrackData.add(theTrackData);
@@ -374,5 +374,22 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         }
         // db.close();
         return allTrackData;
+    }
+
+    public void setVisible(int trackid, boolean visibility) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query = "UPDATE tracks SET isvisible = " + visibility + " WHERE _id = " + trackid;
+        db.execSQL(query);
+        db.close();
+    }
+
+    public void setCurrent(int trackid) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE tracks SET iscurrent = false";
+        db.execSQL(query);
+        query = "UPDATE tracks SET iscurrent = true WHERE _id = " + trackid;
+        db.execSQL(query);
+        db.close();
     }
 }
