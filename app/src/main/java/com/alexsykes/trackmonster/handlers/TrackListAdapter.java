@@ -1,5 +1,6 @@
 package com.alexsykes.trackmonster.handlers;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -20,6 +21,7 @@ import com.alexsykes.trackmonster.activities.TrackListActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.TrackHolder> {
     ArrayList<HashMap<String, String>> theTrackList;
@@ -39,20 +41,18 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     @Override
     public TrackHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         preferences  = PreferenceManager.getDefaultSharedPreferences(viewGroup.getContext());
-//        trackid = preferences.getInt("trackid", 1);
-//        Log.i("Info", "trackid: " + trackid);
+
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.track_row, viewGroup, false);
-        TrackHolder trackHolder = new TrackHolder(v);
-        return trackHolder;
+        return new TrackHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TrackHolder holder, int position) {
+    public void onBindViewHolder(@NonNull TrackHolder holder, @SuppressLint("RecyclerView") int position) {
         theTrack = theTrackList.get(position);
         // holder.itemView.setBackgroundResource(R.color.list_highlist);
-        holder.isCurrentRadioButton.setChecked(1 == Integer.valueOf(theTrack.get("isCurrent")));
+        holder.isCurrentRadioButton.setChecked(1 == Integer.parseInt(Objects.requireNonNull(theTrack.get("isCurrent"))));
         // holder.itemView.setBackgroundResource(R.color.list_highlist);
-        holder.isVisCheckbox.setChecked(1 == Integer.valueOf(theTrack.get("isVisible")));
+        holder.isVisCheckbox.setChecked(1 == Integer.parseInt(Objects.requireNonNull(theTrack.get("isVisible"))));
         holder.nameTextView.setText(theTrack.get("name"));
         // holder.bind(theTrack, listener);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -127,11 +127,11 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
 //            });
 //        }
 
-        private void setActive(String id) {
-            int trackID = Integer.valueOf(id);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putInt("trackid", trackID);
-            editor.apply();
-        }
+//        private void setActive(String id) {
+//            int trackID = Integer.valueOf(id);
+//            SharedPreferences.Editor editor = preferences.edit();
+//            editor.putInt("trackid", trackID);
+//            editor.apply();
+//        }
     }
 }

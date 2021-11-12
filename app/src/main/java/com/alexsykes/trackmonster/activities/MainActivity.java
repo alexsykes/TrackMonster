@@ -15,6 +15,7 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -34,6 +35,7 @@ import com.alexsykes.trackmonster.R;
 import com.alexsykes.trackmonster.data.TrackData;
 import com.alexsykes.trackmonster.data.TrackDbHelper;
 import com.alexsykes.trackmonster.data.WaypointDbHelper;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -64,7 +66,7 @@ import java.util.ArrayList;
 // https://material.io/components/buttons-floating-action-button
 
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleApiClient.ConnectionCallbacks {
+        implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     int updateInterval;
     int trackid;
     public static final int DEFAULT_UPDATE_INTERVAL = 30;
@@ -105,10 +107,16 @@ public class MainActivity extends AppCompatActivity
     private TextView statusTextView;
     private GoogleMap map;
 
+    PowerManager powerManager;
+    PowerManager.WakeLock wakeLock;
+
     // Lifecycle starts
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "TrackMonster::MyWakelockTag");
         setContentView(R.layout.activity_main);
         updateValuesFromBundle(savedInstanceState);
         trackDbHelper = new TrackDbHelper(this);
@@ -167,6 +175,7 @@ public class MainActivity extends AppCompatActivity
         getPrefs();
         if (isRecording) {
             statusText = "Recording";
+            wakeLock.acquire();
         } else {
             isRecording = false;
             statusText = "Paused";
@@ -183,6 +192,9 @@ public class MainActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         stopLocationUpdates();
+        if (wakeLock.isHeld()) {
+            wakeLock.release();
+        }
     }
 
     @Override
@@ -261,9 +273,15 @@ public class MainActivity extends AppCompatActivity
             Log.i(TAG, "fabRecord: onClick: isRecording " + isRecording);
 
             if (isRecording) {
+                wakeLock.acquire();
+
                 fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_baseline_stop_24));
                 startLocationUpdates();
             } else {
+                if (wakeLock.isHeld()) {
+                    wakeLock.release();
+                }
+
                 fabRecord.setImageDrawable(AppCompatResources.getDrawable(getApplicationContext(), R.drawable.ic_play_arrow_48));
                 stopLocationUpdates();
             }
@@ -319,13 +337,10 @@ public class MainActivity extends AppCompatActivity
     // Activity Navigation starts
     private void goTrackList() {
         Intent intent = new Intent(this, TrackListActivity.class);
-        // intent.putExtra(EXTRA_MESSAGE, message);
-        startActivityForResult(intent,
-                ACTIVITY_REQUEST_CODE);
+        startActivity(intent);
     }
     private void goSettings() {
         Intent intent = new Intent(this, SettingsActivity.class);
-        // intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
     }
     // Activity Navigation ends
@@ -336,6 +351,7 @@ public class MainActivity extends AppCompatActivity
         this.map = map;
         UiSettings uiSettings = map.getUiSettings();
         // uiSettings.setZoomControlsEnabled(true);
+        uiSettings.setMapToolbarEnabled(true);
         uiSettings.setCompassEnabled(true);
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setMapToolbarEnabled(true);
@@ -372,12 +388,17 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.i(TAG, "onConnected: restored");
+        Log.i(TAG, "onConnected: ");
     }
 
     @Override
     public void onConnectionSuspended(int i) {
         Log.i(TAG, "onConnected: suspended" + i);
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.i(TAG, "onConnectionFailed: ");
     }
 
     // Overloaded methods returning LatLngBounds for TrackData
@@ -596,7 +617,7 @@ public class MainActivity extends AppCompatActivity
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
-                //.addOnConnectionFailedListener(this)
+                .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
@@ -613,4 +634,5 @@ public class MainActivity extends AppCompatActivity
                     REQUESTING_LOCATION_UPDATES_KEY);
         }
     }
+
 }

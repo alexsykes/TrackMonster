@@ -261,7 +261,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         return theTrackList;
     }
 
-    public void insertNewTrack(boolean isCurrent, String name, String trackDescription, boolean isVisible, String style) {
+    public int insertNewTrack(boolean isCurrent, String name, String trackDescription, boolean isVisible, String style) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
@@ -277,6 +277,14 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
         db.insert("tracks", null, values);
         // db.close();
+        String sql = "SELECT last_insert_rowid()";
+        Cursor result = db.rawQuery(sql, null);
+        result.moveToFirst();
+        int trackid = result.getInt(0);
+        result.close();
+
+        // db.close();
+        return trackid;
     }
 
     public int insertNewTrack() {
