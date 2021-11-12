@@ -64,6 +64,8 @@ import java.util.ArrayList;
 // https://www.youtube.com/watch?v=2ibBng2eJJA
 // https://www.youtube.com/watch?v=_xUcYfbtfsI
 // https://material.io/components/buttons-floating-action-button
+// https://stackoverflow.com/questions/44862176/request-ignore-battery-optimizations-how-to-do-it-right
+// https://stackoverflow.com/questions/11040851/android-intent-to-start-main-activity-of-application
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -162,9 +164,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        if (requestingLocationUpdates) {
+        //if (requestingLocationUpdates) {
             startLocationUpdates();
-        }
+        // }
         Log.i(TAG, "MainActivity: onResume: ");
     }
 
@@ -580,6 +582,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void startLocationUpdates() {
+        Log.i(TAG, "startLocationUpdates: ");
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -590,7 +593,6 @@ public class MainActivity extends AppCompatActivity
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        Log.i(TAG, "startLocationUpdates: ");
         requestingLocationUpdates = true;
         fusedLocationProviderClient.requestLocationUpdates(locationRequest,
                 locationCallback,

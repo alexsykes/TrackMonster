@@ -3,11 +3,15 @@ package com.alexsykes.trackmonster.activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
@@ -129,6 +133,13 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.track_dialog_bottom_menu, menu);
+        return true;
+    }
+
     private void saveTrackDetails() {
         name = nameTextInputLayout.getEditText().getText().toString();
         trackDescription = descriptionTextInputLayout.getEditText().getText().toString();
@@ -158,8 +169,8 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     public void onMapReady(GoogleMap map) {
         this.map = map;
         UiSettings uiSettings = map.getUiSettings();
-        uiSettings.setZoomControlsEnabled(true);
-        uiSettings.setCompassEnabled(true);
+        uiSettings.setZoomControlsEnabled(false);
+        uiSettings.setCompassEnabled(false);
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setMapToolbarEnabled(true);
         map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
@@ -168,7 +179,28 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
             // Display track on map
             displayTrack();
         }
-        //
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.email_menu_item:
+                saveTrackData();
+                return true;
+            case R.id.save_menu_item:
+                emailTrackData();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void emailTrackData() {
+    }
+
+    private void saveTrackData() {
+        trackDataToKML(trackData);
     }
 
     private void displayTrack() {
@@ -208,5 +240,36 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         polyline.setWidth(strokeWidth);
 
         map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
+    }
+
+
+    private String trackDataToKML(TrackData trackData) {
+        ArrayList<LatLng> latLngs = trackData.getLatLngs();
+        int numPoints = latLngs.size();
+
+        String pointsString = "";
+        StringBuilder stringBuilder = new StringBuilder();
+
+
+        for (int i = 0; i < numPoints; i++) {
+            LatLng latLng = latLngs.get(i);
+            String lat = String.valueOf(latLng.latitude);
+            String lng = String.valueOf(latLng.longitude);
+            stringBuilder.append(lat);
+            stringBuilder.append(",");
+            stringBuilder.append(lng);
+            stringBuilder.append(",");
+            stringBuilder.append("0");
+            stringBuilder.append("\n");
+        }
+
+        return stringBuilder.toString();
+    }
+
+    private String latLngToKMLString(LatLng latLng) {
+        String latLngString = "";
+
+
+        return latLngString;
     }
 }
