@@ -2,7 +2,6 @@ package com.alexsykes.trackmonster.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -215,7 +214,8 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     private void saveTrackData() {
         String filename = "trackdata.kml";
         trackDataToKML(trackData);
-        createFile(filename);
+
+        //createFile(filename);
     }
 
 
@@ -287,10 +287,12 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
     }
 
-    private boolean fileWrite(String data){
-        try{
-            String filename = "data.kml";
-            exportDir = new File(getFilesDir(), filename);
+    private boolean fileWrite(String data, String filename) {
+        String name;
+        name = filename;
+        File dir = Environment.getExternalStoragePublicDirectory("Documents");
+        try {
+            exportDir = new File(dir, filename);
             exportDir.createNewFile();
             FileWriter fileWriter = new FileWriter(exportDir);
             String header = data;
@@ -310,6 +312,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         ArrayList<LatLng> latLngs = trackData.getLatLngs();
         int numPoints = latLngs.size();
         String name = trackData.getName();
+        String filename = name + ".gpx";
         String description = trackData.getDescription();
 
         String pointsString = "";
@@ -354,7 +357,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
                 "  </Document>\n" +
                 "</kml>");
 
-        fileWrite(stringBuilder.toString());
+        fileWrite(stringBuilder.toString(), filename);
         return stringBuilder.toString();
     }
 
