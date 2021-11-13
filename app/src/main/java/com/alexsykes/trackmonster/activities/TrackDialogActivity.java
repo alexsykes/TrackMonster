@@ -2,7 +2,10 @@ package com.alexsykes.trackmonster.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,12 +32,16 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class TrackDialogActivity extends AppCompatActivity implements OnMapReadyCallback {
     // Request code for creating a PDF document.
     private static final int CREATE_FILE = 1;
     private static final int PICK_PDF_FILE = 2;
+    File exportDir = new File(Environment.getExternalStoragePublicDirectory("Documents/Scoremonster"), "");
 
     private static final String TAG = "Info";
     TextInputLayout nameTextInputLayout;
@@ -193,7 +200,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
                 saveTrackData();
                 return true;
             case R.id.email_menu_item:
-                emailTrackData();
+              //  emailTrackData();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -202,7 +209,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
 
     private void emailTrackData() {
         trackDataToKML(trackData);
-        openFile();
+       // openFile();
     }
 
     private void saveTrackData() {
@@ -280,6 +287,24 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
     }
 
+    private boolean fileWrite(String data){
+        try{
+            String filename = "data.kml";
+            exportDir = new File(getFilesDir(), filename);
+            exportDir.createNewFile();
+            FileWriter fileWriter = new FileWriter(exportDir);
+            String header = data;
+            fileWriter.write(header);
+            fileWriter.close();
+            return true;
+
+        } catch (
+                IOException e) {
+            Log.e("Child", e.getMessage(), e);
+            return false;
+        }
+    }
+
 
     private String trackDataToKML(TrackData trackData) {
         ArrayList<LatLng> latLngs = trackData.getLatLngs();
@@ -329,6 +354,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
                 "  </Document>\n" +
                 "</kml>");
 
+        fileWrite(stringBuilder.toString());
         return stringBuilder.toString();
     }
 

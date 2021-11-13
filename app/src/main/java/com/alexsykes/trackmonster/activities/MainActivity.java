@@ -193,6 +193,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
+        Log.i(TAG, "onPause: isRecording: " + isRecording);
+        // Save current state 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        editor.putBoolean("isRecording", isRecording);
+        editor.apply();
+        
         stopLocationUpdates();
         if (wakeLock.isHeld()) {
             wakeLock.release();
