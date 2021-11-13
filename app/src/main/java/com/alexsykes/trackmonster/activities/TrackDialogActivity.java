@@ -32,6 +32,10 @@ import com.google.android.material.textfield.TextInputLayout;
 import java.util.ArrayList;
 
 public class TrackDialogActivity extends AppCompatActivity implements OnMapReadyCallback {
+    // Request code for creating a PDF document.
+    private static final int CREATE_FILE = 1;
+    private static final int PICK_PDF_FILE = 2;
+
     private static final String TAG = "Info";
     TextInputLayout nameTextInputLayout;
     TextInputLayout descriptionTextInputLayout;
@@ -185,10 +189,10 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.email_menu_item:
+            case R.id.save_menu_item:
                 saveTrackData();
                 return true;
-            case R.id.save_menu_item:
+            case R.id.email_menu_item:
                 emailTrackData();
                 return true;
             default:
@@ -197,10 +201,44 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void emailTrackData() {
+        trackDataToKML(trackData);
+        openFile();
     }
 
     private void saveTrackData() {
+        String filename = "trackdata.kml";
         trackDataToKML(trackData);
+        createFile(filename);
+    }
+
+
+    private void createFile(String filename) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/pdf");
+        intent.setType("Application/Vnd.google-earth.kml");
+        intent.putExtra(Intent.EXTRA_TITLE, "invoice.pdf");
+        intent.putExtra(Intent.EXTRA_TITLE, filename);
+
+        // Optionally, specify a URI for the directory that should be opened in
+        // the system file picker when your app creates the document.
+        // intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, "Documents");
+
+        startActivityForResult(intent, CREATE_FILE);
+    }
+
+    // private void openFile(Uri pickerInitialUri) {
+    private void openFile() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        // intent.setType("application/pdf");
+        intent.setType("Application/Vnd.google-earth.kml");
+
+        // Optionally, specify a URI for the file that should appear in the
+        // system file picker when it loads.
+        // intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri);
+
+        startActivityForResult(intent, PICK_PDF_FILE);
     }
 
     private void displayTrack() {
@@ -246,22 +284,50 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     private String trackDataToKML(TrackData trackData) {
         ArrayList<LatLng> latLngs = trackData.getLatLngs();
         int numPoints = latLngs.size();
+        String name = trackData.getName();
+        String description = trackData.getDescription();
 
         String pointsString = "";
         StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
+                "  <Document>");
+        stringBuilder.append("\n" +
+                "    <name>" + name + "</name>\n");
+        stringBuilder.append("\n" +
+                "    <description>" + description + "</description>\n");
+        stringBuilder.append("    <Style id=\"yellowLineGreenPoly\">\n" +
+                "      <LineStyle>\n" +
+                "        <color>7f00ffff</color>\n" +
+                "        <width>4</width>\n" +
+                "      </LineStyle>\n" +
+                "      <PolyStyle>\n" +
+                "        <color>7f00ff00</color>\n" +
+                "      </PolyStyle>\n" +
+                "    </Style>\n<styleUrl>#yellowLineGreenPoly</styleUrl>\n");
 
+        stringBuilder.append("      <LineString>\n" +
+                "        <extrude>1</extrude>\n" +
+                "        <tessellate>1</tessellate>\n" +
+                "        <altitudeMode>absolute</altitudeMode>\n" +
+                "        <coordinates>");
 
         for (int i = 0; i < numPoints; i++) {
             LatLng latLng = latLngs.get(i);
             String lat = String.valueOf(latLng.latitude);
             String lng = String.valueOf(latLng.longitude);
-            stringBuilder.append(lat);
-            stringBuilder.append(",");
             stringBuilder.append(lng);
+            stringBuilder.append(",");
+            stringBuilder.append(lat);
             stringBuilder.append(",");
             stringBuilder.append("0");
             stringBuilder.append("\n");
         }
+        stringBuilder.append("        </coordinates>\n" +
+                "      </LineString>\n" +
+                "    </Placemark>\n" +
+                "  </Document>\n" +
+                "</kml>");
 
         return stringBuilder.toString();
     }
