@@ -290,7 +290,7 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     private boolean fileWrite(String data, String filename) {
         String name;
         name = filename;
-        File dir = Environment.getExternalStoragePublicDirectory("Documents");
+        File dir = Environment.getExternalStoragePublicDirectory("Documents/TrackMonster");
         try {
             exportDir = new File(dir, filename);
             exportDir.createNewFile();
@@ -312,33 +312,46 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         ArrayList<LatLng> latLngs = trackData.getLatLngs();
         int numPoints = latLngs.size();
         String name = trackData.getName();
-        String filename = name + ".gpx";
+        String trackType = trackData.getStyle();
+        String filename = name + ".kml";
         String description = trackData.getDescription();
 
         String pointsString = "";
         StringBuilder stringBuilder = new StringBuilder();
+        // Add header lines
         stringBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
-                "  <Document>");
+                "<Document>");
+
+        // Add pathname and description
         stringBuilder.append("\n" +
-                "    <name>" + name + "</name>\n");
+                "    <name>" + name + "</name>\n" +
+                "    <open>1</open>");
         stringBuilder.append("\n" +
                 "    <description>" + description + "</description>\n");
-        stringBuilder.append("    <Style id=\"yellowLineGreenPoly\">\n" +
-                "      <LineStyle>\n" +
-                "        <color>7f00ffff</color>\n" +
-                "        <width>4</width>\n" +
-                "      </LineStyle>\n" +
-                "      <PolyStyle>\n" +
-                "        <color>7f00ff00</color>\n" +
-                "      </PolyStyle>\n" +
-                "    </Style>\n<styleUrl>#yellowLineGreenPoly</styleUrl>\n");
 
-        stringBuilder.append("      <LineString>\n" +
-                "        <extrude>1</extrude>\n" +
-                "        <tessellate>1</tessellate>\n" +
-                "        <altitudeMode>absolute</altitudeMode>\n" +
-                "        <coordinates>");
+        // Add style data
+        stringBuilder.append("<Style id=\"blueline\">\n" +
+                "    <LineStyle>\n" +
+                "        <color>7fff0000</color>\n" +
+                "        <width>4</width>\n" +
+                "    </LineStyle>\n" +
+                "    <PolyStyle>\n" +
+                "        <color>7fff0000</color>\n" +
+                "     </PolyStyle>\n" +
+                "</Style>\n");
+
+        stringBuilder.append("<Folder>\n" +
+                "    <name>Paths</name>\n" +
+                "    <visibility>1</visibility>\n" +
+                "    <description>" + trackType + "</description>\n" +
+                "<Placemark>   \n" +
+                "   <name>Something else goes here</name>\n" +
+                "   <visibility>1</visibility>" +
+                "    \n   <styleUrl>#blueline</styleUrl>");
+
+        stringBuilder.append("\n<LineString>\n" +
+                "<coordinates>\n");
 
         for (int i = 0; i < numPoints; i++) {
             LatLng latLng = latLngs.get(i);
@@ -351,10 +364,11 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
             stringBuilder.append("0");
             stringBuilder.append("\n");
         }
-        stringBuilder.append("        </coordinates>\n" +
-                "      </LineString>\n" +
-                "    </Placemark>\n" +
-                "  </Document>\n" +
+        stringBuilder.append("</coordinates>\n" +
+                "</LineString>\n" +
+                "</Placemark>\n" +
+                "</Folder>\n" +
+                "</Document>\n" +
                 "</kml>");
 
         fileWrite(stringBuilder.toString(), filename);

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Environment;
 import android.util.Log;
 
 import androidx.preference.PreferenceManager;
@@ -15,19 +16,22 @@ import com.alexsykes.trackmonster.data.TrackDbHelper;
 import com.alexsykes.trackmonster.data.WaypointContract;
 import com.alexsykes.trackmonster.data.WaypointDbHelper;
 
+import java.io.File;
+
 public class TrackMonster extends Application {
 
     // Databases
     private WaypointDbHelper waypointDbHelper;
     private TrackDbHelper trackDbHelper;
     SharedPreferences preferences;
+
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i("Info", "TrackMonster class: OnAppStart");
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean hasSampleData = preferences.getBoolean("hasRun", false);
-        if(!hasSampleData) {
+        if (!hasSampleData) {
             waypointDbHelper = new WaypointDbHelper(this);
             trackDbHelper = new TrackDbHelper(this);
             // Create database connection
@@ -36,6 +40,15 @@ public class TrackMonster extends Application {
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean("hasRun", true);
             editor.apply();
+        }
+        // Add directory for file export
+        //final File externalFileDir = getExternalFilesDir(null);
+        final File externalFileDir = Environment.getExternalStoragePublicDirectory("Documents");
+        String folderName = "TrackMonster";
+
+        File createDir = new File(externalFileDir.getAbsoluteFile(), folderName);
+        if (!createDir.exists()) {
+            createDir.mkdir();
         }
     }
 
