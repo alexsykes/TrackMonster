@@ -50,6 +50,7 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -97,13 +98,18 @@ public class MainActivity extends AppCompatActivity
     private boolean requestingLocationUpdates;
     private static final String TAG = "Info";
     TrackData currentTrack;
+    TrackData[] visibleTrackData;
 
+    // Location
     private Location lastKnownLocation;
     private CameraPosition cameraPosition;
     private LocationCallback locationCallback;
     private LocationRequest locationRequest;
+
+    // TrackData
     private TrackDbHelper trackDbHelper;
     private WaypointDbHelper waypointDbHelper;
+
     // UI
     private FloatingActionButton fabRecord, fabCutAndNew, fabAddWaypoint;
     private TextView statusTextView;
@@ -122,9 +128,6 @@ public class MainActivity extends AppCompatActivity
                 "TrackMonster::MyWakelockTag");
         setContentView(R.layout.activity_main);
         updateValuesFromBundle(savedInstanceState);
-        trackDbHelper = new TrackDbHelper(this);
-        currentTrack = getCurrentTrackData();
-        trackid = currentTrack.get_id();
         // UI components
         // View mLayout = findViewById(R.id.map);
         fabRecord = findViewById(R.id.fabRecord);
@@ -176,6 +179,11 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         Log.i(TAG, "MainActivity: onStart: ");
         getPrefs();
+        trackDbHelper = new TrackDbHelper(this);
+        currentTrack = getCurrentTrackData();
+        visibleTrackData = trackDbHelper.getAllVisbleTrackData();
+        trackid = currentTrack.get_id();
+
         if (isRecording) {
             statusText = "Recording";
             wakeLock.acquire();
@@ -188,7 +196,6 @@ public class MainActivity extends AppCompatActivity
         }        // Set up FAB menu
         fabSetup();
         statusTextView.setText(statusText);
-        trackid = trackDbHelper.getCurrentTrackID();
         displayAllVisibleTracks();
     }
 
@@ -562,10 +569,25 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void displayAllVisibleTracks() {
+        int numTracks;
         LatLngBounds latLngBounds;
         TrackData[] trackDataArray = trackDbHelper.getAllTrackData();
-
+        numTracks = trackDataArray.length;
         latLngBounds = calcBounds(trackDataArray);
+
+        ArrayList[] latLngs  = new ArrayList[numTracks];
+        PolylineOptions[] polylineOptions = new PolylineOptions[numTracks];
+        for (int i = 0; i < numTracks; i++) {
+            latLngs[i] = trackDataArray[i].getLatLngs();
+            polylineOptions[i] = new PolylineOptions();
+            polylineOptions[i].addAll(trackDataArray[i].getLatLngs());
+            PolylineOptions color = polylineOptions[i]
+                    .width(5)
+                    .color(Color.BLUE);
+
+           // map.addPolyline(polylineOptions[i]);
+        }
+
     }
 
     private void getDeviceLastLocation() {

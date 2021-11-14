@@ -206,6 +206,23 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         TrackData[] trackDataArray;
         ArrayList<HashMap<String, String>> trackList;
 
+        trackList = getShortTrackList();
+        trackDataArray = new TrackData[trackList.size()];
+        // Initialise database - get count of tracks
+        // SQLiteDatabase db = this.getWritableDatabase();
+
+        for (int i = 0; i < trackList.size(); i++) {
+            int trackid = Integer.parseInt(trackList.get(i).get("id"));
+            trackDataArray[i] = getTrackData(trackid);
+        }
+        return trackDataArray;
+    }
+
+
+    public TrackData[] getAllVisbleTrackData() {
+        TrackData[] trackDataArray;
+        ArrayList<HashMap<String, String>> trackList;
+
         trackList = getShortVisibleTrackList();
         trackDataArray = new TrackData[trackList.size()];
         // Initialise database - get count of tracks
@@ -222,7 +239,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     public ArrayList<HashMap<String, String>> getShortTrackList() {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String query = "SELECT _id , name, isVisible, isCurrent FROM tracks  ORDER BY _id ASC";
+        String query = "SELECT _id , name, isCurrent, isVisible FROM tracks  ORDER BY _id ASC";
 
         // query = "SELECT * FROM tracks";
         Cursor cursor = db.rawQuery(query, null);
