@@ -1,5 +1,6 @@
 package com.alexsykes.trackmonster.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -298,13 +300,30 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
             String header = data;
             fileWriter.write(header);
             fileWriter.close();
+            Context context = getApplicationContext();
+
+            CharSequence text = "Track data saved to Documents/TrackMonster";
+            int duration = Toast.LENGTH_LONG;
+
+            Toast toast = Toast.makeText(context, text, duration);
+            toast.show();
+
+
             return true;
 
         } catch (
                 IOException e) {
             Log.e("Child", e.getMessage(), e);
+            Context context = getApplicationContext();
+            CharSequence text = e.getMessage();
+            int duration = Toast.LENGTH_LONG;
+
+            Toast toast = Toast.makeText(context, text, duration);
+            toast.show();
+
             return false;
         }
+
     }
 
 
@@ -375,10 +394,4 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         return stringBuilder.toString();
     }
 
-    private String latLngToKMLString(LatLng latLng) {
-        String latLngString = "";
-
-
-        return latLngString;
-    }
 }

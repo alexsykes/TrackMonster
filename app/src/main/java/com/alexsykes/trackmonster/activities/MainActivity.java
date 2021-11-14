@@ -116,13 +116,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(TAG, "onCreate: ");
         powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 "TrackMonster::MyWakelockTag");
         setContentView(R.layout.activity_main);
         updateValuesFromBundle(savedInstanceState);
         trackDbHelper = new TrackDbHelper(this);
-        getPrefs();
         currentTrack = getCurrentTrackData();
         trackid = currentTrack.get_id();
         // UI components
