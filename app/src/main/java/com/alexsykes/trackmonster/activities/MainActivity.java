@@ -146,7 +146,9 @@ public class MainActivity extends AppCompatActivity
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
-                    processNewLocation(location);
+                    if (isRecording) {
+                        processNewLocation(location);
+                    }
                 }
             }
         };
@@ -157,8 +159,7 @@ public class MainActivity extends AppCompatActivity
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
-        // Set up FAB menu
-        fabSetup();
+
     }
 
     @Override
@@ -184,7 +185,8 @@ public class MainActivity extends AppCompatActivity
         }
         if (trackid == 0) {
             statusText = statusText + "No track selected";
-        }
+        }        // Set up FAB menu
+        fabSetup();
         statusTextView.setText(statusText);
         trackid = trackDbHelper.getCurrentTrackID();
         displayAllVisibleTracks();
@@ -404,6 +406,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onConnectionSuspended(int i) {
         Log.i(TAG, "onConnected: suspended" + i);
+        Context context = getApplicationContext();
+        CharSequence text = "Connection lost";
+        int duration = Toast.LENGTH_SHORT;
+
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
+
     }
 
     @Override
