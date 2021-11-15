@@ -669,5 +669,4 @@ public class MainActivity extends AppCompatActivity
                     REQUESTING_LOCATION_UPDATES_KEY);
         }
     }
-
 }
