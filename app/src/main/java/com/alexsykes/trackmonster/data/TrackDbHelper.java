@@ -113,16 +113,14 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(trackQuery, null);
 
         if (cursor.getCount() == 0) {
-            cursor.close();
-            db.close();
-            return 0;
+            trackid = 0;
         } else {
             cursor.moveToFirst();
             trackid = cursor.getInt(0);
-            cursor.close();
-            db.close();
-            return trackid;
         }
+        cursor.close();
+        db.close();
+        return trackid;
     }
 
     @SuppressLint("Range")
@@ -197,16 +195,15 @@ public class TrackDbHelper extends SQLiteOpenHelper {
                     westmost = lng;
                 }
             }
-            cursor.close();
+            // cursor.close();
         }
-
+        cursor.close();
         db.close();
         LatLng northeast = new LatLng(northmost, eastmost);
         LatLng southwest = new LatLng(southmost, westmost);
         latLngBounds = new LatLngBounds(southwest, northeast);
 
         int _id = trackid;
-        cursor.close();
         return new TrackData(_id, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
     }
 
@@ -216,8 +213,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
         trackList = getShortTrackList();
         trackDataArray = new TrackData[trackList.size()];
-        // Initialise database - get count of tracks
-        // SQLiteDatabase db = this.getWritableDatabase();
 
         for (int i = 0; i < trackList.size(); i++) {
             int trackid = Integer.parseInt(trackList.get(i).get("id"));
@@ -227,7 +222,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     }
 
 
-    public TrackData[] getAllVisbleTrackData() {
+    public TrackData[] getAllVisibleTrackData() {
         TrackData[] trackDataArray;
         ArrayList<HashMap<String, String>> trackList;
 
@@ -301,13 +296,11 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE, style);
 
         db.insert("tracks", null, values);
-        // db.close();
         String sql = "SELECT last_insert_rowid()";
         Cursor cursor = db.rawQuery(sql, null);
         cursor.moveToFirst();
         int trackid = cursor.getInt(0);
         cursor.close();
-
         db.close();
         return trackid;
     }
@@ -335,7 +328,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
         trackid = cursor.getInt(0);
         cursor.close();
-
         db.close();
         return trackid;
     }
@@ -393,18 +385,18 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         int count = theTrackIndices.size();
 
         ArrayList<ArrayList<LatLng>> allTrackData = new ArrayList<>();
-        for(int i = 0; i<count; i++){
+        for(int i = 0; i<count; i++) {
             int index = theTrackIndices.get(i);
             query = "SELECT lat, lng  FROM waypoints WHERE trackid = " + index + " ORDER BY _id ASC";
 
-            Cursor theWaypoints = db.rawQuery(query, null);
+            cursor = db.rawQuery(query, null);
             ArrayList<LatLng> theTrackData = new ArrayList<>();
-            while (theWaypoints.moveToNext()) {
-                theTrackData.add(new LatLng(theWaypoints.getDouble(0), theWaypoints.getDouble(1)));
+            while (cursor.moveToNext()) {
+                theTrackData.add(new LatLng(cursor.getDouble(0), cursor.getDouble(1)));
             }
             allTrackData.add(theTrackData);
-            theWaypoints.close();
         }
+        cursor.close();
         db.close();
         return allTrackData;
     }

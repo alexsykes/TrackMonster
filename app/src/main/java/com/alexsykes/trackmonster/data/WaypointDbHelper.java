@@ -91,12 +91,4 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
         db.close();
         return theWaypoints;
     }
-//
-//    public void update() {
-//        SQLiteDatabase db = this.getWritableDatabase();
-//        String query = "UPDATE waypoints SET trackid = 3 WHERE trackid = '0'";
-//
-//        db.execSQL(query);
-//        db.close();
-//    }
 }

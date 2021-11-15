@@ -576,7 +576,7 @@ public class MainActivity extends AppCompatActivity
 
     private void displayAllVisibleTracks(GoogleMap map) {
         LatLngBounds latLngBounds;
-        TrackData[] trackDataArray = trackDbHelper.getAllTrackData();
+        TrackData[] trackDataArray = trackDbHelper.getAllVisibleTrackData();
 
         for (int i = 0; i < trackDataArray.length; i++) {
             showTrack(trackDataArray[i].getLatLngs());
