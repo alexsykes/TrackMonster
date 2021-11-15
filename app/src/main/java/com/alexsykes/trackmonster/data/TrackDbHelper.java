@@ -47,6 +47,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             isCurrent = cursor.getInt(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT)) > 0;
             style = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE));
         }
+        cursor.close();
 
         // Get waypoint data
         String waypointQuery = "SELECT * FROM waypoints WHERE trackid = " + trackid + " ORDER BY _id ASC";
@@ -92,13 +93,13 @@ public class TrackDbHelper extends SQLiteOpenHelper {
                 }
             }
             cursor.close();
-            // db.close();
+            db.close();
         }
 
         LatLng northeast = new LatLng(northmost, eastmost);
         LatLng southwest = new LatLng(southmost, westmost);
         latLngBounds = new LatLngBounds(southwest, northeast);
-
+        cursor.close();
         return new TrackData(trackid, latLngs, name, description,
                 northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
     }
@@ -115,7 +116,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
         trackid = cursor.getInt(0);
         cursor.close();
-        // db.close();
+        db.close();
         return trackid;
     }
 
@@ -147,6 +148,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             style = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE));
         }
 
+        cursor.close();
         // Get waypoint data
         String waypointQuery = "SELECT * FROM waypoints WHERE trackid = " + trackid + " ORDER BY _id ASC";
         cursor = db.rawQuery(waypointQuery, null);
@@ -193,12 +195,13 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             cursor.close();
         }
 
-        // db.close();
+        db.close();
         LatLng northeast = new LatLng(northmost, eastmost);
         LatLng southwest = new LatLng(southmost, westmost);
         latLngBounds = new LatLngBounds(southwest, northeast);
 
         int _id = trackid;
+        cursor.close();
         return new TrackData(_id, latLngs, name, description, northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
     }
 
@@ -236,7 +239,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             theTrackList.add(tracks);
         }
         cursor.close();
-        // db.close();
+        db.close();
         return theTrackList;
     }
 
@@ -257,7 +260,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             theTrackList.add(tracks);
         }
         cursor.close();
-        // db.close();
+        db.close();
         return theTrackList;
     }
 
@@ -278,12 +281,12 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         db.insert("tracks", null, values);
         // db.close();
         String sql = "SELECT last_insert_rowid()";
-        Cursor result = db.rawQuery(sql, null);
-        result.moveToFirst();
-        int trackid = result.getInt(0);
-        result.close();
+        Cursor cursor = db.rawQuery(sql, null);
+        cursor.moveToFirst();
+        int trackid = cursor.getInt(0);
+        cursor.close();
 
-        // db.close();
+        db.close();
         return trackid;
     }
 
@@ -306,12 +309,12 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         db.insert("tracks", null, values);
 
         String sql = "SELECT last_insert_rowid()";
-        Cursor result = db.rawQuery(sql, null);
-        result.moveToFirst();
-        trackid = result.getInt(0);
-        result.close();
+        Cursor cursor = db.rawQuery(sql, null);
+        cursor.moveToFirst();
+        trackid = cursor.getInt(0);
+        cursor.close();
 
-        // db.close();
+        db.close();
         return trackid;
     }
 
@@ -319,7 +322,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "INSERT  OR IGNORE INTO tracks  (_id, name, isvisible, iscurrent, style ) VALUES ('1','" + name + "', true,true, 'Track')";
         db.execSQL(query);
-        // db.close();
+        db.close();
     }
 
     public void updateTrack(int trackID, String name, String trackDescription, boolean isVisible, boolean isCurrent, String style) {
@@ -342,7 +345,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         String[] whereArgs = new String[]{String.valueOf(trackID)};
         String where = "_id=?";
         db.update("tracks", values, where, whereArgs);
-        // db.close();
+        db.close();
     }
 
     @Override
@@ -380,7 +383,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             allTrackData.add(theTrackData);
             theWaypoints.close();
         }
-        // db.close();
+        db.close();
         return allTrackData;
     }
 

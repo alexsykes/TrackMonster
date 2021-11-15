@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity
         fabSetup();
         statusTextView.setText(statusText);
         trackid = trackDbHelper.getCurrentTrackID();
-        displayAllVisibleTracks();
+        // displayAllVisibleTracks();
     }
 
     @Override
@@ -392,10 +392,11 @@ public class MainActivity extends AppCompatActivity
         waypointDbHelper = new WaypointDbHelper(this);
         ArrayList<LatLng> currentTrack = waypointDbHelper.getTrackPoints(trackid);
         if (currentTrack.size() > 0) {
-            LatLngBounds latLngBounds = showCurrentTrack(currentTrack);
-            map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
+            //   LatLngBounds latLngBounds = showCurrentTrack(currentTrack);
+            //   map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
         }
         // trackDbHelper = new TrackDbHelper(this);
+        displayAllVisibleTracks(map);
     }
 
     @Override
@@ -511,6 +512,17 @@ public class MainActivity extends AppCompatActivity
         return calcBounds(currentTrack);
     }
 
+    private void showTrack(ArrayList<LatLng> currentTrack) {
+        PolylineOptions polylineOptions = new PolylineOptions();
+        // Create polyline options with existing LatLng ArrayList
+        polylineOptions.addAll(currentTrack);
+        polylineOptions
+                .width(5)
+                .color(Color.BLUE);
+
+        map.addPolyline(polylineOptions);
+    }
+
     private void processNewLocation(Location location) {
         trackid = trackDbHelper.getCurrentTrackID();
         waypointDbHelper = new WaypointDbHelper(this);
@@ -561,11 +573,15 @@ public class MainActivity extends AppCompatActivity
         return trackDbHelper.getCurrentTrackData();
     }
 
-    private void displayAllVisibleTracks() {
+    private void displayAllVisibleTracks(GoogleMap map) {
         LatLngBounds latLngBounds;
         TrackData[] trackDataArray = trackDbHelper.getAllTrackData();
 
+        for (int i = 0; i < trackDataArray.length; i++) {
+            showTrack(trackDataArray[i].getLatLngs());
+        }
         latLngBounds = calcBounds(trackDataArray);
+        map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
     }
 
     private void getDeviceLastLocation() {

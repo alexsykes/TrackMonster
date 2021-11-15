@@ -28,6 +28,8 @@ public class TrackMonster extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+//        if(BuildConfig.DEBUG)
+//            StrictMode.enableDefaults();
         Log.i("Info", "TrackMonster class: OnAppStart");
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean hasSampleData = preferences.getBoolean("hasRun", false);
@@ -92,6 +94,7 @@ public class TrackMonster extends Application {
                 + TrackContract.TrackEntry.COLUMN_TRACKS_UPDATED + " TEXT );";
 
         db.execSQL(SQL_CREATE_TRACK_TABLE);
+        db.close();
         waypointDbHelper.generateRandomData(20);
     }
     protected boolean canConnect() {
