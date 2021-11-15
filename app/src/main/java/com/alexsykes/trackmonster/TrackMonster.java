@@ -54,11 +54,6 @@ public class TrackMonster extends Application {
         }
     }
 
-    private void update() {
-        waypointDbHelper = new WaypointDbHelper(this);
-        waypointDbHelper.uodate();
-    }
-
     private void dbInit() {
         // Database operations - https://www.tutorialspoint.com/android/android_sqlite_database.htm
         // First, get your database

@@ -396,7 +396,7 @@ public class MainActivity extends AppCompatActivity
             //   map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
         }
         // trackDbHelper = new TrackDbHelper(this);
-        displayAllVisibleTracks(map);
+        // displayAllVisibleTracks(map);
     }
 
     @Override
