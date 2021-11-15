@@ -92,14 +92,13 @@ public class TrackDbHelper extends SQLiteOpenHelper {
                     westmost = lng;
                 }
             }
-            cursor.close();
-            db.close();
         }
 
         LatLng northeast = new LatLng(northmost, eastmost);
         LatLng southwest = new LatLng(southmost, westmost);
         latLngBounds = new LatLngBounds(southwest, northeast);
         cursor.close();
+        db.close();
         return new TrackData(trackid, latLngs, name, description,
                 northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
     }
@@ -113,11 +112,17 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         String trackQuery = "SELECT _id FROM tracks WHERE iscurrent = 1";
         Cursor cursor = db.rawQuery(trackQuery, null);
 
-        cursor.moveToFirst();
-        trackid = cursor.getInt(0);
-        cursor.close();
-        db.close();
-        return trackid;
+        if (cursor.getCount() == 0) {
+            cursor.close();
+            db.close();
+            return 0;
+        } else {
+            cursor.moveToFirst();
+            trackid = cursor.getInt(0);
+            cursor.close();
+            db.close();
+            return trackid;
+        }
     }
 
     @SuppressLint("Range")

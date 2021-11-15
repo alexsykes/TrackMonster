@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
 
 import com.alexsykes.trackmonster.R;
 import com.alexsykes.trackmonster.data.TrackData;
@@ -55,7 +54,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     String task;
     String style;
     String trackDescription;
-    boolean isVisible, isCurrent;
     int trackID;
     TrackDbHelper trackDbHelper;
     Intent intent;
@@ -82,47 +80,20 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         roadButton = findViewById(R.id.roadButton);
         majorRoadButton = findViewById(R.id.majorRoadButton);
 
-        // Add listeners for changes
-        nameTextInputLayout.getEditText().setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                saveTrackDetails();
-            }
-        });
-
-        descriptionTextInputLayout.getEditText().setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                saveTrackDetails();
-            }
-        });
-
-        trackStyleGroup.setOnCheckedChangeListener((group, checkedId) -> saveTrackDetails());
-
-        isVisibleCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> saveTrackDetails());
-
-        isCurrentCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> saveTrackDetails());
-
-        // Get the SupportMapFragment and request notification when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.trackMap);
-        mapFragment.getMapAsync(this);
-
         // Get data
         trackDbHelper = new TrackDbHelper(this);
         intent = getIntent();
         trackID = Integer.parseInt(intent.getExtras().getString("trackid", "1"));
         task = intent.getExtras().getString("task");
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        // trackIdFromPrefs = prefs.getInt("trackid", 1);
-
-        // Get existing track details and show values
+        // Set initial values
         if (task.equals("update")) {
             trackData = trackDbHelper.getTrackData(trackID);
 
             nameTextInputLayout.getEditText().setText(trackData.getName());
             descriptionTextInputLayout.getEditText().setText(trackData.getDescription());
-            isVisible = trackData.isVisible();
-            isCurrent = trackData.isCurrent();
+            boolean isVisible = trackData.isVisible();
+            boolean isCurrent = trackData.isCurrent();
             isVisibleCheckBox.setChecked(isVisible);
             isCurrentCheckBox.setChecked(isCurrent);
             style = trackData.getStyle();
@@ -143,6 +114,32 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
                 default:
             }
         }
+
+        // Add listeners for changes
+        nameTextInputLayout.getEditText().setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                saveTrackDetails();
+            }
+        });
+        descriptionTextInputLayout.getEditText().setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                saveTrackDetails();
+            }
+        });
+        trackStyleGroup.setOnCheckedChangeListener((group, checkedId) -> saveTrackDetails());
+        isVisibleCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> saveTrackDetails());
+        isCurrentCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> saveTrackDetails());
+
+        // Get the SupportMapFragment and request notification when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.trackMap);
+        mapFragment.getMapAsync(this);
+
+
+        // prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        // trackIdFromPrefs = prefs.getInt("trackid", 1);
+
+        // Get existing track details and show values
     }
 
     @Override
@@ -155,8 +152,8 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     private void saveTrackDetails() {
         name = nameTextInputLayout.getEditText().getText().toString();
         trackDescription = descriptionTextInputLayout.getEditText().getText().toString();
-        isVisible = isVisibleCheckBox.isChecked();
-        isCurrent = isCurrentCheckBox.isChecked();
+        boolean isVisible = isVisibleCheckBox.isChecked();
+        boolean isCurrent = isCurrentCheckBox.isChecked();
 
         int radioButtonID = trackStyleGroup.getCheckedRadioButtonId();
         RadioButton selected = trackStyleGroup.findViewById(radioButtonID);
@@ -181,8 +178,8 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
     public void onMapReady(GoogleMap map) {
         this.map = map;
         UiSettings uiSettings = map.getUiSettings();
-        uiSettings.setZoomControlsEnabled(false);
-        uiSettings.setCompassEnabled(false);
+        uiSettings.setZoomControlsEnabled(true);
+        uiSettings.setCompassEnabled(true);
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setMapToolbarEnabled(true);
         map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
@@ -192,7 +189,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
             displayTrack();
         }
     }
-
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -220,7 +216,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         //createFile(filename);
     }
 
-
     private void createFile(String filename) {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -236,7 +231,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         startActivityForResult(intent, CREATE_FILE);
     }
 
-    // private void openFile(Uri pickerInitialUri) {
     private void openFile() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -325,7 +319,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
         }
 
     }
-
 
     private String trackDataToKML(TrackData trackData) {
         ArrayList<LatLng> latLngs = trackData.getLatLngs();

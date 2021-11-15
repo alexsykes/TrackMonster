@@ -183,12 +183,13 @@ public class MainActivity extends AppCompatActivity
             isRecording = false;
             statusText = "Paused";
         }
+        // Check for zero = no current track
+        trackid = trackDbHelper.getCurrentTrackID();
         if (trackid == 0) {
             statusText = statusText + "No track selected";
         }        // Set up FAB menu
         fabSetup();
         statusTextView.setText(statusText);
-        trackid = trackDbHelper.getCurrentTrackID();
         // displayAllVisibleTracks();
     }
 
