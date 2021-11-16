@@ -376,7 +376,11 @@ public class MainActivity extends AppCompatActivity
         map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
-                displayAllVisibleTracks(map);
+                if (isRecording) {
+                    displayCurrentTrack(map);
+                } else {
+                    displayAllVisibleTracks(map);
+                }
             }
         });
         UiSettings uiSettings = map.getUiSettings();
@@ -413,6 +417,7 @@ public class MainActivity extends AppCompatActivity
             //   map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
         }*/
     }
+
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -594,16 +599,20 @@ public class MainActivity extends AppCompatActivity
             showTrack(trackDataArray[i].getLatLngs());
         }
         latLngBounds = calcBounds(trackDataArray);
-        // map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 30));
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(latLngBounds, 30);
+        map.animateCamera(cu);
+    }
+
+    private void displayCurrentTrack(GoogleMap map) {
+        LatLngBounds latLngBounds;
+        TrackData trackData = trackDbHelper.getCurrentTrackData();
+        showTrack(trackData.getLatLngs());
+        latLngBounds = trackData.getLatLngBounds();
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(latLngBounds, 30);
         map.animateCamera(cu);
     }
 
     private void getDeviceLastLocation() {
-        /*      Can this be replaced by map showing all visible tracks?
-         * *     Get the best and most recent location of the device, which may be null in rare
-         *      cases when a location is not available.*/
-
         try {
             if (locationPermissionGranted) {
                 Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
