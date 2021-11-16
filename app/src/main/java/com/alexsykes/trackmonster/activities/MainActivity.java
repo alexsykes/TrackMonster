@@ -195,14 +195,9 @@ public class MainActivity extends AppCompatActivity
 
         MapStateManager mgr = new MapStateManager(this);
         mgr.saveMapState(map);
-        Toast.makeText(this, "Map State has been saved?", Toast.LENGTH_SHORT).show();
         // Save current state 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
-        cameraPosition = map.getCameraPosition();
-
-        editor.putLong("cameraPositionlat", Double.doubleToRawLongBits(cameraPosition.target.latitude));
-        editor.putLong("cameraPositionlng", Double.doubleToRawLongBits(cameraPosition.target.longitude));
         editor.putBoolean("isRecording", isRecording);
         editor.apply();
 
@@ -260,9 +255,6 @@ public class MainActivity extends AppCompatActivity
     private void getPrefs() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
-        double lng = Double.longBitsToDouble(prefs.getLong("cameraPositionlng", 0));
-        double lat = Double.longBitsToDouble(prefs.getLong("cameraPositionlat", 0));
-        cameraPositionLatLng = new LatLng(lat, lng);
         isRecording = prefs.getBoolean("isRecording", false);
         editor.putBoolean("canConnect", canConnect());
         editor.apply();
@@ -377,9 +369,7 @@ public class MainActivity extends AppCompatActivity
         CameraPosition position = mgr.getSavedCameraPosition();
         if (position != null) {
             CameraUpdate update = CameraUpdateFactory.newCameraPosition(position);
-            Toast.makeText(this, "entering Resume State", Toast.LENGTH_SHORT).show();
             map.moveCamera(update);
-
             map.setMapType(mgr.getSavedMapType());
         }
 
