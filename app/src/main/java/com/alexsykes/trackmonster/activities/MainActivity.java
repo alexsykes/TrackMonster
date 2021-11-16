@@ -42,6 +42,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity
     GoogleApiClient mGoogleApiClient;
 
     // CONSTANTS
-    private static final int DEFAULT_ZOOM = 15;
+    private static final int DEFAULT_ZOOM = 14;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final String KEY_IS_RECORDING = "isRecording";
     private static final String KEY_TRACKID = "trackid";
@@ -190,7 +191,7 @@ public class MainActivity extends AppCompatActivity
         }        // Set up FAB menu
         fabSetup();
         statusTextView.setText(statusText);
-        // displayAllVisibleTracks();
+
     }
 
     @Override
@@ -362,6 +363,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap map) {
         this.map = map;
+        map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                displayAllVisibleTracks(map);
+                //map.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 3));
+            }
+        });
         UiSettings uiSettings = map.getUiSettings();
         // uiSettings.setZoomControlsEnabled(true);
         uiSettings.setMapToolbarEnabled(true);
@@ -385,9 +393,9 @@ public class MainActivity extends AppCompatActivity
 
         // map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
         if (cameraPosition != null) {
-            map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            // map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
-        getDeviceLastLocation();
+        //getDeviceLastLocation();
 
         // Replace this
         waypointDbHelper = new WaypointDbHelper(this);
@@ -397,7 +405,6 @@ public class MainActivity extends AppCompatActivity
             //   map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
         }
         // trackDbHelper = new TrackDbHelper(this);
-        // displayAllVisibleTracks(map);
     }
 
     @Override
@@ -582,7 +589,9 @@ public class MainActivity extends AppCompatActivity
             showTrack(trackDataArray[i].getLatLngs());
         }
         latLngBounds = calcBounds(trackDataArray);
-        map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
+        // map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 30));
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(latLngBounds, 30);
+        map.animateCamera(cu);
     }
 
     private void getDeviceLastLocation() {
