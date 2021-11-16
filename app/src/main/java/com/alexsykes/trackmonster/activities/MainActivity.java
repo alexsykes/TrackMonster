@@ -31,6 +31,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
+import com.alexsykes.trackmonster.MapStateManager;
 import com.alexsykes.trackmonster.R;
 import com.alexsykes.trackmonster.data.TrackData;
 import com.alexsykes.trackmonster.data.TrackDbHelper;
@@ -67,6 +68,7 @@ import java.util.ArrayList;
 // https://material.io/components/buttons-floating-action-button
 // https://stackoverflow.com/questions/44862176/request-ignore-battery-optimizations-how-to-do-it-right
 // https://stackoverflow.com/questions/11040851/android-intent-to-start-main-activity-of-application
+// https://stackoverflow.com/questions/34636722/android-saving-map-state-in-google-map
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -101,6 +103,7 @@ public class MainActivity extends AppCompatActivity
 
     private Location lastKnownLocation;
     private CameraPosition cameraPosition;
+    private MapStateManager mapStateManager;
     private LocationCallback locationCallback;
     private LocationRequest locationRequest;
     private TrackDbHelper trackDbHelper;
@@ -112,54 +115,28 @@ public class MainActivity extends AppCompatActivity
 
     PowerManager powerManager;
     PowerManager.WakeLock wakeLock;
+    private LatLng cameraPositionLatLng;
 
     // Lifecycle starts
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreate: ");
-        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                "TrackMonster::MyWakelockTag");
         setContentView(R.layout.activity_main);
-        updateValuesFromBundle(savedInstanceState);
-        trackDbHelper = new TrackDbHelper(this);
-        currentTrack = getCurrentTrackData();
-        trackid = currentTrack.get_id();
-        // UI components
-        // View mLayout = findViewById(R.id.map);
-        fabRecord = findViewById(R.id.fabRecord);
-        statusTextView = findViewById(R.id.statusTextView);
-        fabCutAndNew = findViewById(R.id.fabCutAndNew);
-        fabAddWaypoint = findViewById(R.id.fabAddWaypoint);
+        Log.i(TAG, "onCreate: ");
 
-        // Construct a FusedLocationProviderClient.
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        locationRequest = new LocationRequest();
-        locationRequest.setInterval(1000L * updateInterval);
-        locationRequest.setFastestInterval(1000L * FASTEST_UPDATE_INTERVAL);
-        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) {
-                    return;
-                }
-                for (Location location : locationResult.getLocations()) {
-                    if (isRecording) {
-                        processNewLocation(location);
-                    }
-                }
+        if (savedInstanceState != null) {
+            lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
+            cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+            if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
+                requestingLocationUpdates = savedInstanceState.getBoolean(
+                        REQUESTING_LOCATION_UPDATES_KEY);
             }
-        };
+        }
 
-        // Get the SupportMapFragment and request notification when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        assert mapFragment != null;
-        mapFragment.getMapAsync(this);
-
+        setUpWakeLock();
+        getData();
+        setupUI();
+        getFusedLocationProviderClient();
 
     }
 
@@ -175,6 +152,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+        // Get the SupportMapFragment and request notification when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        assert mapFragment != null;
+        mapFragment.getMapAsync(this);
+
         Log.i(TAG, "MainActivity: onStart: ");
         getPrefs();
         if (isRecording) {
@@ -191,7 +174,6 @@ public class MainActivity extends AppCompatActivity
         }        // Set up FAB menu
         fabSetup();
         statusTextView.setText(statusText);
-
     }
 
     @Override
@@ -201,14 +183,24 @@ public class MainActivity extends AppCompatActivity
         // Save current state 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
+        cameraPosition = map.getCameraPosition();
 
+        editor.putLong("cameraPositionlat", Double.doubleToRawLongBits(cameraPosition.target.latitude));
+        editor.putLong("cameraPositionlng", Double.doubleToRawLongBits(cameraPosition.target.longitude));
         editor.putBoolean("isRecording", isRecording);
         editor.apply();
-        
+
         stopLocationUpdates();
         if (wakeLock.isHeld()) {
             wakeLock.release();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable(KEY_CAMERA_POSITION, map.getCameraPosition());
+        outState.putParcelable(KEY_LOCATION, lastKnownLocation);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -252,7 +244,9 @@ public class MainActivity extends AppCompatActivity
     private void getPrefs() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
-
+        double lng = Double.longBitsToDouble(prefs.getLong("cameraPositionlng", 0));
+        double lat = Double.longBitsToDouble(prefs.getLong("cameraPositionlat", 0));
+        cameraPositionLatLng = new LatLng(lat, lng);
         isRecording = prefs.getBoolean("isRecording", false);
         editor.putBoolean("canConnect", canConnect());
         editor.apply();
@@ -367,7 +361,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onMapLoaded() {
                 displayAllVisibleTracks(map);
-                //map.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 3));
             }
         });
         UiSettings uiSettings = map.getUiSettings();
@@ -391,20 +384,18 @@ public class MainActivity extends AppCompatActivity
             map.setMyLocationEnabled(true);
         }
 
-        // map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
         if (cameraPosition != null) {
             // map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
         //getDeviceLastLocation();
 
         // Replace this
-        waypointDbHelper = new WaypointDbHelper(this);
+/*        waypointDbHelper = new WaypointDbHelper(this);
         ArrayList<LatLng> currentTrack = waypointDbHelper.getTrackPoints(trackid);
         if (currentTrack.size() > 0) {
             //   LatLngBounds latLngBounds = showCurrentTrack(currentTrack);
             //   map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
-        }
-        // trackDbHelper = new TrackDbHelper(this);
+        }*/
     }
 
     @Override
@@ -418,10 +409,8 @@ public class MainActivity extends AppCompatActivity
         Context context = getApplicationContext();
         CharSequence text = "Connection lost";
         int duration = Toast.LENGTH_SHORT;
-
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
-
     }
 
     @Override
@@ -668,15 +657,48 @@ public class MainActivity extends AppCompatActivity
         mGoogleApiClient.connect();
     }
 
-    private void updateValuesFromBundle(Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
-            return;
-        }
+    private void setUpWakeLock() {
+        // Wake lock
+        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "TrackMonster::MyWakelockTag");
+    }
 
-        // Update the value of requestingLocationUpdates from the Bundle.
-        if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
-            requestingLocationUpdates = savedInstanceState.getBoolean(
-                    REQUESTING_LOCATION_UPDATES_KEY);
-        }
+    private void getData() {
+        // Data
+        trackDbHelper = new TrackDbHelper(this);
+        currentTrack = getCurrentTrackData();
+        trackid = currentTrack.get_id();
+    }
+
+    private void setupUI() {
+        // UI components
+        fabRecord = findViewById(R.id.fabRecord);
+        statusTextView = findViewById(R.id.statusTextView);
+        fabCutAndNew = findViewById(R.id.fabCutAndNew);
+        fabAddWaypoint = findViewById(R.id.fabAddWaypoint);
+    }
+
+    private void getFusedLocationProviderClient() {
+        // Construct a FusedLocationProviderClient.
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(1000L * updateInterval);
+        locationRequest.setFastestInterval(1000L * FASTEST_UPDATE_INTERVAL);
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    if (isRecording) {
+                        processNewLocation(location);
+                    }
+                }
+            }
+        };
     }
 }
