@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setupMapIfNeeded();
         Log.i(TAG, "onCreate: ");
 
         if (savedInstanceState != null) {
@@ -140,11 +141,22 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    private void setupMapIfNeeded() {
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        if (map == null) {
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
+        }
+
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        setupMapIfNeeded();
         //if (requestingLocationUpdates) {
-            startLocationUpdates();
+        startLocationUpdates();
         // }
         Log.i(TAG, "MainActivity: onResume: ");
     }
@@ -180,6 +192,10 @@ public class MainActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         Log.i(TAG, "onPause: isRecording: " + isRecording);
+
+        MapStateManager mgr = new MapStateManager(this);
+        mgr.saveMapState(map);
+        Toast.makeText(this, "Map State has been saved?", Toast.LENGTH_SHORT).show();
         // Save current state 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
@@ -357,6 +373,16 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap map) {
         this.map = map;
+        MapStateManager mgr = new MapStateManager(this);
+        CameraPosition position = mgr.getSavedCameraPosition();
+        if (position != null) {
+            CameraUpdate update = CameraUpdateFactory.newCameraPosition(position);
+            Toast.makeText(this, "entering Resume State", Toast.LENGTH_SHORT).show();
+            map.moveCamera(update);
+
+            map.setMapType(mgr.getSavedMapType());
+        }
+
         map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
