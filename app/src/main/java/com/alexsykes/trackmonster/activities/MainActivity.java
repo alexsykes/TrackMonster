@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity
         getData();
         setupUI();
         getFusedLocationProviderClient();
-
+        getLocationPermission();
     }
 
     private void setupMapIfNeeded() {
@@ -390,7 +390,6 @@ public class MainActivity extends AppCompatActivity
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setMapToolbarEnabled(true);
         map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-        getLocationPermission();
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
@@ -403,19 +402,6 @@ public class MainActivity extends AppCompatActivity
             buildGoogleApiClient();
             map.setMyLocationEnabled(true);
         }
-
-        if (cameraPosition != null) {
-            // map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        }
-        //getDeviceLastLocation();
-
-        // Replace this
-/*        waypointDbHelper = new WaypointDbHelper(this);
-        ArrayList<LatLng> currentTrack = waypointDbHelper.getTrackPoints(trackid);
-        if (currentTrack.size() > 0) {
-            //   LatLngBounds latLngBounds = showCurrentTrack(currentTrack);
-            //   map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 1000, 1000, 3));
-        }*/
     }
 
 
