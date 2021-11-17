@@ -56,7 +56,6 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
 
             db.insertWithOnConflict("waypoints", null, values, SQLiteDatabase.CONFLICT_REPLACE);
         }
-         db.close();
     }
 
     public void addLocation(int trackid, double lat, double lng, double speed, double bearing, double alt) {
@@ -72,7 +71,6 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
         values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT, alt);
 
         db.insert("waypoints", null, values);
-        db.close();
     }
 
     public ArrayList<LatLng> getTrackPoints(int trackID) {
@@ -88,7 +86,6 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        db.close();
         return theWaypoints;
     }
 }

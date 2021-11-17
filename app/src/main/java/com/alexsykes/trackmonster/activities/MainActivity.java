@@ -134,21 +134,11 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        setUpWakeLock();
+
         getData();
         setupUI();
         getFusedLocationProviderClient();
         getLocationPermission();
-    }
-
-    private void setupMapIfNeeded() {
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        if (map == null) {
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.map);
-            mapFragment.getMapAsync(this);
-        }
-
     }
 
     @Override
@@ -164,6 +154,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+        setUpWakeLock();
         // Get the SupportMapFragment and request notification when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -193,6 +184,7 @@ public class MainActivity extends AppCompatActivity
         super.onPause();
         Log.i(TAG, "onPause: isRecording: " + isRecording);
 
+        trackDbHelper.closeDB();
         MapStateManager mgr = new MapStateManager(this);
         mgr.saveMapState(map);
         // Save current state 
@@ -666,6 +658,16 @@ public class MainActivity extends AppCompatActivity
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
+    }
+
+    private void setupMapIfNeeded() {
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        if (map == null) {
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
+        }
+
     }
 
     private void setUpWakeLock() {

@@ -21,6 +21,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
     public TrackDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        SQLiteDatabase db = this.getWritableDatabase();
     }
 
     @SuppressLint("Range")
@@ -98,7 +99,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         LatLng southwest = new LatLng(southmost, westmost);
         latLngBounds = new LatLngBounds(southwest, northeast);
         cursor.close();
-        db.close();
         return new TrackData(trackid, latLngs, name, description,
                 northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
     }
@@ -119,7 +119,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             trackid = cursor.getInt(0);
         }
         cursor.close();
-        db.close();
         return trackid;
     }
 
@@ -198,7 +197,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             // cursor.close();
         }
         cursor.close();
-        db.close();
         LatLng northeast = new LatLng(northmost, eastmost);
         LatLng southwest = new LatLng(southmost, westmost);
         latLngBounds = new LatLngBounds(southwest, northeast);
@@ -256,7 +254,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             theTrackList.add(tracks);
         }
         cursor.close();
-        db.close();
         return theTrackList;
     }
 
@@ -277,7 +274,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             theTrackList.add(tracks);
         }
         cursor.close();
-        db.close();
         return theTrackList;
     }
 
@@ -301,7 +297,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
         int trackid = cursor.getInt(0);
         cursor.close();
-        db.close();
         return trackid;
     }
 
@@ -328,7 +323,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
         trackid = cursor.getInt(0);
         cursor.close();
-        db.close();
         return trackid;
     }
 
@@ -336,7 +330,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "INSERT  OR IGNORE INTO tracks  (_id, name, isvisible, iscurrent, style ) VALUES ('1','" + name + "', true,true, 'Track')";
         db.execSQL(query);
-        db.close();
     }
 
     public void updateTrack(int trackID, String name, String trackDescription, boolean isVisible, boolean isCurrent, String style) {
@@ -359,7 +352,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         String[] whereArgs = new String[]{String.valueOf(trackID)};
         String where = "_id=?";
         db.update("tracks", values, where, whereArgs);
-        db.close();
     }
 
     @Override
@@ -397,7 +389,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             allTrackData.add(theTrackData);
         }
         cursor.close();
-        db.close();
         return allTrackData;
     }
 
@@ -406,7 +397,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
         String query = "UPDATE tracks SET isvisible = " + visibility + " WHERE _id = " + trackid;
         db.execSQL(query);
-        db.close();
     }
 
     public void setCurrent(int trackid) {
@@ -415,6 +405,10 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         db.execSQL(query);
         query = "UPDATE tracks SET iscurrent = true WHERE _id = " + trackid;
         db.execSQL(query);
+    }
+
+    public void closeDB() {
+        SQLiteDatabase db = this.getWritableDatabase();
         db.close();
     }
 }
