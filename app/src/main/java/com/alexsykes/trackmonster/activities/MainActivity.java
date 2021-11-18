@@ -134,7 +134,6 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-
         getData();
         setupUI();
         getFusedLocationProviderClient();
@@ -185,8 +184,8 @@ public class MainActivity extends AppCompatActivity
         Log.i(TAG, "onPause: isRecording: " + isRecording);
 
         trackDbHelper.closeDB();
-        MapStateManager mgr = new MapStateManager(this);
-        mgr.saveMapState(map);
+        mapStateManager = new MapStateManager(this);
+        mapStateManager.saveMapState(map);
         // Save current state 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
@@ -357,12 +356,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap map) {
         this.map = map;
-        MapStateManager mgr = new MapStateManager(this);
-        CameraPosition position = mgr.getSavedCameraPosition();
+        mapStateManager = new MapStateManager(this);
+        CameraPosition position = mapStateManager.getSavedCameraPosition();
         if (position != null) {
             CameraUpdate update = CameraUpdateFactory.newCameraPosition(position);
             map.moveCamera(update);
-            map.setMapType(mgr.getSavedMapType());
+            map.setMapType(mapStateManager.getSavedMapType());
         }
 
         map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
@@ -508,13 +507,39 @@ public class MainActivity extends AppCompatActivity
         return calcBounds(currentTrack);
     }
 
-    private void showTrack(ArrayList<LatLng> currentTrack) {
+    private void showTrack(TrackData currentTrack) {
+        final int COLOR_DARK_GREEN_ARGB = 0xff388E3C;
+        final int COLOR_LIGHT_GREEN_ARGB = 0xff81C784;
+        final int COLOR_DARK_ORANGE_ARGB = 0xffF57F17;
+        final int COLOR_LIGHT_ORANGE_ARGB = 0xffF9A825;
+
+        int strokeWidth = 5;
+        int strokeColour = COLOR_DARK_GREEN_ARGB;
+        ArrayList<LatLng> latLngs = currentTrack.getLatLngs();
+        String style = currentTrack.getStyle();
         PolylineOptions polylineOptions = new PolylineOptions();
         // Create polyline options with existing LatLng ArrayList
-        polylineOptions.addAll(currentTrack);
+        polylineOptions.addAll(latLngs);
+
+        switch (style) {
+            case "Undefined":
+                strokeColour = COLOR_LIGHT_GREEN_ARGB;
+                break;
+            case "Track":
+                strokeColour = COLOR_DARK_GREEN_ARGB;
+                strokeWidth = 10;
+                break;
+            case "Road":
+                strokeColour = COLOR_LIGHT_ORANGE_ARGB;
+                break;
+            case "Major road":
+                strokeColour = COLOR_DARK_ORANGE_ARGB;
+                strokeWidth = 10;
+                break;
+        }
         polylineOptions
-                .width(5)
-                .color(Color.BLUE);
+                .color(strokeColour)
+                .width(strokeWidth);
 
         map.addPolyline(polylineOptions);
     }
@@ -574,7 +599,7 @@ public class MainActivity extends AppCompatActivity
         TrackData[] trackDataArray = trackDbHelper.getAllVisibleTrackData();
 
         for (int i = 0; i < trackDataArray.length; i++) {
-            showTrack(trackDataArray[i].getLatLngs());
+            showTrack(trackDataArray[i]);
         }
         latLngBounds = calcBounds(trackDataArray);
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(latLngBounds, 30);
@@ -584,7 +609,7 @@ public class MainActivity extends AppCompatActivity
     private void displayCurrentTrack(GoogleMap map) {
         LatLngBounds latLngBounds;
         TrackData trackData = trackDbHelper.getCurrentTrackData();
-        showTrack(trackData.getLatLngs());
+        showTrack(trackData);
         latLngBounds = trackData.getLatLngBounds();
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(latLngBounds, 30);
         map.animateCamera(cu);

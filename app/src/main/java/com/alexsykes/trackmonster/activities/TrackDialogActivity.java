@@ -196,9 +196,6 @@ public class TrackDialogActivity extends AppCompatActivity implements OnMapReady
             case R.id.save_menu_item:
                 saveTrackData();
                 return true;
-            case R.id.email_menu_item:
-              //  emailTrackData();
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
