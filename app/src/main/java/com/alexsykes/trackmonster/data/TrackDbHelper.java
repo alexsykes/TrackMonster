@@ -21,6 +21,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
     public TrackDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        SQLiteDatabase db = this.getWritableDatabase();
     }
 
     @SuppressLint("Range")
@@ -47,6 +48,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             isCurrent = cursor.getInt(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT)) > 0;
             style = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE));
         }
+        cursor.close();
 
         // Get waypoint data
         String waypointQuery = "SELECT * FROM waypoints WHERE trackid = " + trackid + " ORDER BY _id ASC";
@@ -91,14 +93,12 @@ public class TrackDbHelper extends SQLiteOpenHelper {
                     westmost = lng;
                 }
             }
-            cursor.close();
-            // db.close();
         }
 
         LatLng northeast = new LatLng(northmost, eastmost);
         LatLng southwest = new LatLng(southmost, westmost);
         latLngBounds = new LatLngBounds(southwest, northeast);
-
+        cursor.close();
         return new TrackData(trackid, latLngs, name, description,
                 northmost, southmost, eastmost, westmost, latLngBounds, isVisible, isCurrent, style);
     }
@@ -112,10 +112,13 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         String trackQuery = "SELECT _id FROM tracks WHERE iscurrent = 1";
         Cursor cursor = db.rawQuery(trackQuery, null);
 
-        cursor.moveToFirst();
-        trackid = cursor.getInt(0);
+        if (cursor.getCount() == 0) {
+            trackid = 0;
+        } else {
+            cursor.moveToFirst();
+            trackid = cursor.getInt(0);
+        }
         cursor.close();
-        // db.close();
         return trackid;
     }
 
@@ -147,6 +150,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             style = cursor.getString(cursor.getColumnIndex(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE));
         }
 
+        cursor.close();
         // Get waypoint data
         String waypointQuery = "SELECT * FROM waypoints WHERE trackid = " + trackid + " ORDER BY _id ASC";
         cursor = db.rawQuery(waypointQuery, null);
@@ -190,10 +194,9 @@ public class TrackDbHelper extends SQLiteOpenHelper {
                     westmost = lng;
                 }
             }
-            cursor.close();
+            // cursor.close();
         }
-
-        // db.close();
+        cursor.close();
         LatLng northeast = new LatLng(northmost, eastmost);
         LatLng southwest = new LatLng(southmost, westmost);
         latLngBounds = new LatLngBounds(southwest, northeast);
@@ -203,6 +206,21 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     }
 
     public TrackData[] getAllTrackData() {
+        TrackData[] trackDataArray;
+        ArrayList<HashMap<String, String>> trackList;
+
+        trackList = getShortTrackList();
+        trackDataArray = new TrackData[trackList.size()];
+
+        for (int i = 0; i < trackList.size(); i++) {
+            int trackid = Integer.parseInt(trackList.get(i).get("id"));
+            trackDataArray[i] = getTrackData(trackid);
+        }
+        return trackDataArray;
+    }
+
+
+    public TrackData[] getAllVisibleTrackData() {
         TrackData[] trackDataArray;
         ArrayList<HashMap<String, String>> trackList;
 
@@ -222,7 +240,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
     public ArrayList<HashMap<String, String>> getShortTrackList() {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String query = "SELECT _id , name, isVisible, isCurrent FROM tracks  ORDER BY _id ASC";
+        String query = "SELECT _id , name, isCurrent, isVisible FROM tracks  ORDER BY _id ASC";
 
         // query = "SELECT * FROM tracks";
         Cursor cursor = db.rawQuery(query, null);
@@ -236,7 +254,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             theTrackList.add(tracks);
         }
         cursor.close();
-        // db.close();
         return theTrackList;
     }
 
@@ -257,11 +274,10 @@ public class TrackDbHelper extends SQLiteOpenHelper {
             theTrackList.add(tracks);
         }
         cursor.close();
-        // db.close();
         return theTrackList;
     }
 
-    public void insertNewTrack(boolean isCurrent, String name, String trackDescription, boolean isVisible, String style) {
+    public int insertNewTrack(boolean isCurrent, String name, String trackDescription, boolean isVisible, String style) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
@@ -276,7 +292,12 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE, style);
 
         db.insert("tracks", null, values);
-        // db.close();
+        String sql = "SELECT last_insert_rowid()";
+        Cursor cursor = db.rawQuery(sql, null);
+        cursor.moveToFirst();
+        int trackid = cursor.getInt(0);
+        cursor.close();
+        return trackid;
     }
 
     public int insertNewTrack() {
@@ -298,12 +319,10 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         db.insert("tracks", null, values);
 
         String sql = "SELECT last_insert_rowid()";
-        Cursor result = db.rawQuery(sql, null);
-        result.moveToFirst();
-        trackid = result.getInt(0);
-        result.close();
-
-        // db.close();
+        Cursor cursor = db.rawQuery(sql, null);
+        cursor.moveToFirst();
+        trackid = cursor.getInt(0);
+        cursor.close();
         return trackid;
     }
 
@@ -311,7 +330,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "INSERT  OR IGNORE INTO tracks  (_id, name, isvisible, iscurrent, style ) VALUES ('1','" + name + "', true,true, 'Track')";
         db.execSQL(query);
-        // db.close();
     }
 
     public void updateTrack(int trackID, String name, String trackDescription, boolean isVisible, boolean isCurrent, String style) {
@@ -334,7 +352,6 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         String[] whereArgs = new String[]{String.valueOf(trackID)};
         String where = "_id=?";
         db.update("tracks", values, where, whereArgs);
-        // db.close();
     }
 
     @Override
@@ -360,19 +377,38 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         int count = theTrackIndices.size();
 
         ArrayList<ArrayList<LatLng>> allTrackData = new ArrayList<>();
-        for(int i = 0; i<count; i++){
+        for(int i = 0; i<count; i++) {
             int index = theTrackIndices.get(i);
             query = "SELECT lat, lng  FROM waypoints WHERE trackid = " + index + " ORDER BY _id ASC";
 
-            Cursor theWaypoints = db.rawQuery(query, null);
+            cursor = db.rawQuery(query, null);
             ArrayList<LatLng> theTrackData = new ArrayList<>();
-            while(theWaypoints.moveToNext()) {
-                theTrackData.add(new LatLng(theWaypoints.getDouble(0), theWaypoints.getDouble(1)));
+            while (cursor.moveToNext()) {
+                theTrackData.add(new LatLng(cursor.getDouble(0), cursor.getDouble(1)));
             }
             allTrackData.add(theTrackData);
-            theWaypoints.close();
         }
-        // db.close();
+        cursor.close();
         return allTrackData;
+    }
+
+    public void setVisible(int trackid, boolean visibility) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query = "UPDATE tracks SET isvisible = " + visibility + " WHERE _id = " + trackid;
+        db.execSQL(query);
+    }
+
+    public void setCurrent(int trackid) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE tracks SET iscurrent = false";
+        db.execSQL(query);
+        query = "UPDATE tracks SET iscurrent = true WHERE _id = " + trackid;
+        db.execSQL(query);
+    }
+
+    public void closeDB() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.close();
     }
 }

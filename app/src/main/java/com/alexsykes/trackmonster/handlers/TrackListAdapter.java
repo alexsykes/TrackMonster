@@ -1,12 +1,15 @@
 package com.alexsykes.trackmonster.handlers;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,25 +21,15 @@ import com.alexsykes.trackmonster.activities.TrackListActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.TrackHolder> {
     ArrayList<HashMap<String, String>> theTrackList;
     HashMap<String, String> theTrack;
-    OnItemClickListener listener;
     static SharedPreferences preferences;
-    //int trackid;
-
-    public interface OnItemClickListener {
-        void onItemClick(HashMap<String, String> theTrack);
-    }
 
     public TrackListAdapter(ArrayList<HashMap<String, String>> theTrackList) {
         this.theTrackList = theTrackList;
-    }
-
-    public TrackListAdapter(ArrayList<HashMap<String, String>> theTrackList, OnItemClickListener listener) {
-        this.theTrackList = theTrackList;
-        this.listener = listener;
     }
 
     @Override
@@ -48,19 +41,18 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     @Override
     public TrackHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         preferences  = PreferenceManager.getDefaultSharedPreferences(viewGroup.getContext());
-//        trackid = preferences.getInt("trackid", 1);
-//        Log.i("Info", "trackid: " + trackid);
+
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.track_row, viewGroup, false);
-        TrackHolder trackHolder = new TrackHolder(v);
-        return trackHolder;
+        return new TrackHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TrackHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull TrackHolder holder, @SuppressLint("RecyclerView") int position) {
         theTrack = theTrackList.get(position);
-        if (1 == Integer.valueOf(theTrack.get("isCurrent"))) {
-            holder.itemView.setBackgroundResource(R.color.list_highlist);
-        }
+        // holder.itemView.setBackgroundResource(R.color.list_highlist);
+        holder.isCurrentRadioButton.setChecked(1 == Integer.parseInt(Objects.requireNonNull(theTrack.get("isCurrent"))));
+        // holder.itemView.setBackgroundResource(R.color.list_highlist);
+        holder.isVisCheckbox.setChecked(1 == Integer.parseInt(Objects.requireNonNull(theTrack.get("isVisible"))));
         holder.nameTextView.setText(theTrack.get("name"));
         // holder.bind(theTrack, listener);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -72,6 +64,30 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
                 ((TrackListActivity) context).onClickCalled(id);
             }
         });
+
+        holder.isCurrentRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                int trackid = Integer.valueOf(theTrackList.get(position).get("id"));
+                Log.i("Info", "isCurrentRadioButton.onCheckedChanged: " + trackid);
+
+                Context context = buttonView.getContext();
+                ((TrackListActivity) context).updateCurrent(trackid);
+            }
+        });
+
+        holder.isVisCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                int trackid = Integer.valueOf(theTrackList.get(position).get("id"));
+                Log.i("Info", "isVisCheckbox.onCheckedChanged: " + trackid);
+                boolean checked;
+                checked = holder.isVisCheckbox.isChecked();
+                Context context = buttonView.getContext();
+                ((TrackListActivity) context).updateVisible(trackid, checked);
+            }
+        });
+
     }
 
     @Override
@@ -79,12 +95,15 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
 
     public static class TrackHolder extends RecyclerView.ViewHolder {
         TextView idTextView, nameTextView;
-        ImageView isVisibleView, isCurrentView;
+        CheckBox isVisCheckbox;
+        RadioButton isCurrentRadioButton;
 
         public TrackHolder(@NonNull View itemView) {
             super(itemView);
 
             nameTextView = itemView.findViewById(R.id.name);
+            isCurrentRadioButton = itemView.findViewById(R.id.isCurrentRadioButton);
+            isVisCheckbox = itemView.findViewById(R.id.isVisCheckbox);
         }
 
 //        public void bind(final HashMap<String, String> theTrial, final OnItemClickListener listener) {
@@ -108,11 +127,11 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
 //            });
 //        }
 
-        private void setActive(String id) {
-            int trackID = Integer.valueOf(id);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putInt("trackid", trackID);
-            editor.apply();
-        }
+//        private void setActive(String id) {
+//            int trackID = Integer.valueOf(id);
+//            SharedPreferences.Editor editor = preferences.edit();
+//            editor.putInt("trackid", trackID);
+//            editor.apply();
+//        }
     }
 }

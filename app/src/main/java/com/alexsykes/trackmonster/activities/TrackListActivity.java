@@ -47,7 +47,6 @@ public class TrackListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // populateTrackList();
         Log.i(TAG, "TrackListActivity: onResume: ");
     }
 
@@ -57,7 +56,6 @@ public class TrackListActivity extends AppCompatActivity {
         intent.putExtra("trackid", trackid);
         intent.putExtra("task", "update");
         startActivity(intent);
-      //  startActivityForResult(intent, TEXT_REQUEST);
     }
 
     private void populateTrackList() {
@@ -69,8 +67,19 @@ public class TrackListActivity extends AppCompatActivity {
         trackView.setHasFixedSize(true);
         initializeAdapter();
     }
+
     private void initializeAdapter() {
         TrackListAdapter adapter = new TrackListAdapter(theTrackList);
         trackView.setAdapter(adapter);
+    }
+
+    public void updateVisible(int trackid, boolean visibility) {
+        trackDbHelper.setVisible(trackid, visibility);
+        populateTrackList();
+    }
+
+    public void updateCurrent(int trackid) {
+        trackDbHelper.setCurrent(trackid);
+        populateTrackList();
     }
 }
