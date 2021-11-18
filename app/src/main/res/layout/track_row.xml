@@ -7,16 +7,6 @@
     android:layout_marginTop="0dp"
     android:layout_marginBottom="0dp">
 
-<!--    <TextView
-        android:id="@+id/id"
-        android:layout_width="20dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="0"
-        android:textAlignment="textEnd"
-        android:layout_marginEnd="10dp"
-        android:textSize="18sp"
-        android:textStyle="bold" />-->
-
     <TextView
         android:id="@+id/name"
         android:layout_width="0dp"
@@ -34,20 +24,4 @@
         android:id="@+id/isCurrentRadioButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
-
-    <!--    <ImageButton
-            android:id="@+id/isVisible"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:src="@drawable/ic_baseline_visibility_24" />
-
-        <ImageButton
-            android:id="@+id/isActive"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="0"
-            app:srcCompat="@drawable/ic_baseline_add_circle_24" />-->
-
-
 </LinearLayout>
