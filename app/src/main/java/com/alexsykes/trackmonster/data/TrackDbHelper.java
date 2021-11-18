@@ -287,8 +287,8 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         }
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, name);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_DESCRIPTION, trackDescription);
-        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE, isVisible);
-        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT, true);
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE, 0);
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT, 0);
         values.put(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE, style);
 
         db.insert("tracks", null, values);
