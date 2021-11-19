@@ -328,7 +328,7 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
     public void insertFirstTrack(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "INSERT  OR IGNORE INTO tracks  (_id, name, isvisible, iscurrent, style ) VALUES ('1','" + name + "', true,true, 'Track')";
+        String query = "INSERT  OR IGNORE INTO tracks  (_id, name, isvisible, iscurrent, style ) VALUES ('1','" + name + "', 1, 1, 'Track')";
         db.execSQL(query);
     }
 
