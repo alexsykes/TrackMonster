@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setupUI();
         setupMapIfNeeded();
         Log.i(TAG, "onCreate: ");
 
@@ -109,9 +110,7 @@ public class MainActivity extends AppCompatActivity
             lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
             cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         }
-
         getData();
-        setupUI();
     }
 
     @Override
@@ -368,13 +367,15 @@ public class MainActivity extends AppCompatActivity
     private void displayAllVisibleTracks(GoogleMap map) {
         LatLngBounds latLngBounds;
         TrackData[] trackDataArray = trackDbHelper.getAllVisibleTrackData();
-
-        for (int i = 0; i < trackDataArray.length; i++) {
-            showTrack(trackDataArray[i]);
+        map.clear();
+        if (trackDataArray.length > 0) {
+            for (int i = 0; i < trackDataArray.length; i++) {
+                showTrack(trackDataArray[i]);
+            }
+            latLngBounds = calcBounds(trackDataArray);
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(latLngBounds, 30);
+            map.animateCamera(cu);
         }
-        latLngBounds = calcBounds(trackDataArray);
-        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(latLngBounds, 30);
-        map.animateCamera(cu);
     }
 
 
@@ -404,12 +405,12 @@ public class MainActivity extends AppCompatActivity
     private void setupUI() {
         // UI components
         statusTextView = findViewById(R.id.statusTextView);
+        trackListRecyclerView = findViewById(R.id.trackListRecyclerView);
     }
 
 
     private void populateTrackList() {
         theTrackList = trackDbHelper.getShortTrackList();
-        trackListRecyclerView = findViewById(R.id.trackListRecyclerView);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         trackListRecyclerView.setLayoutManager(llm);
@@ -425,10 +426,20 @@ public class MainActivity extends AppCompatActivity
 
     public void onClickCalled(String trackid) {
         // Call another activity here and pass some arguments to it.
-//        Intent intent = new Intent(this, TrackDialogActivity.class);
-//        intent.putExtra("trackid", trackid);
-//        intent.putExtra("task", "update");
-//        startActivity(intent);
+        Intent intent = new Intent(this, TrackDialogActivity.class);
+        intent.putExtra("trackid", trackid);
+        intent.putExtra("task", "update");
+        startActivity(intent);
         Log.i(TAG, "onClickCalled: ");
+    }
+
+    public void updateVisible(int trackid, boolean visibility) {
+        trackDbHelper.setVisible(trackid, visibility);
+        populateTrackList();
+        displayAllVisibleTracks(map);
+        //updateMap(map);
+    }
+
+    private void updateMap(GoogleMap map) {
     }
 }

@@ -396,8 +396,8 @@ public class TrackDbHelper extends SQLiteOpenHelper {
 
     public void setVisible(int trackid, boolean visibility) {
         SQLiteDatabase db = this.getWritableDatabase();
-
-        String query = "UPDATE tracks SET isvisible = " + visibility + " WHERE _id = " + trackid;
+        int vis = (visibility) ? 1 : 0;
+        String query = "UPDATE tracks SET isvisible = " + vis + " WHERE _id = " + trackid;
         db.execSQL(query);
     }
 
