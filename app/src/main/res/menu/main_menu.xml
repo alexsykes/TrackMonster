@@ -3,9 +3,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/tracks"
-        android:icon="@drawable/ic_list_48"
-        android:title="@string/track_list"
+        android:id="@+id/import_track"
+        android:icon="@drawable/ic_import_48"
+        android:title="@string/import_track"
         android:visible="true"
         app:showAsAction="always" />
 

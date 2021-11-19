@@ -7,8 +7,11 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,8 +41,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import io.ticofab.androidgpxparser.parser.GPXParser;
+import io.ticofab.androidgpxparser.parser.domain.Gpx;
 
 // See https://developers.google.com/maps/documentation/android-sdk/map-with-marker
 // https://developers.google.com/maps/documentation/android-sdk/current-place-tutorial
@@ -52,12 +62,16 @@ import java.util.HashMap;
 // https://stackoverflow.com/questions/44862176/request-ignore-battery-optimizations-how-to-do-it-right
 // https://stackoverflow.com/questions/11040851/android-intent-to-start-main-activity-of-application
 // https://stackoverflow.com/questions/34636722/android-saving-map-state-in-google-map
+// https://www.topografix.com/GPX/1/1/
+// https://github.com/ticofab/android-gpx-parser
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback {
     int updateInterval;
     int trackid;
     public static final int DEFAULT_UPDATE_INTERVAL = 30;
+    // Request code for selecting a PDF document.
+    private static final int PICK_PDF_FILE = 2;
     RecyclerView trackListRecyclerView;
 
     // Flags
@@ -114,6 +128,28 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.settings:
+                Toast.makeText(this, "Settings Clicked", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.import_track:
+                Toast.makeText(this, "Import Clicked", Toast.LENGTH_SHORT).show();
+                openDirectory(null);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         setupMapIfNeeded();
@@ -154,6 +190,22 @@ public class MainActivity extends AppCompatActivity
         editor.apply();
     }
 
+    public void getGPSParser() {
+        GPXParser parser = new GPXParser();
+        Gpx parsedGpx = null;
+        try {
+            InputStream in = getAssets().open("test.gpx");
+            parsedGpx = parser.parse(in);
+        } catch (IOException | XmlPullParserException e) {
+            e.printStackTrace();
+        }
+        if (parsedGpx == null) {
+            //  error
+        } else {
+
+        }
+    }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putParcelable(KEY_CAMERA_POSITION, map.getCameraPosition());
@@ -168,20 +220,32 @@ public class MainActivity extends AppCompatActivity
 //        return true;
 //    }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.settings:
-                goSettings();
-                return true;
-            case R.id.tracks:
-                goTrackList();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
     // Lifecycle ends
+
+
+    private void openFile(Uri pickerInitialUri) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/pdf");
+
+        // Optionally, specify a URI for the file that should appear in the
+        // system file picker when it loads.
+        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri);
+
+        startActivityForResult(intent, PICK_PDF_FILE);
+    }
+
+    public void openDirectory(Uri uriToLoad) {
+        // Choose a directory using the system's file picker.
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+
+        // Optionally, specify a URI for the directory that should be opened in
+        // the system file picker when it loads.
+        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, 2);
+
+        startActivityForResult(intent, 2);
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -242,7 +306,7 @@ public class MainActivity extends AppCompatActivity
         map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
-                    displayAllVisibleTracks(map);
+                displayAllVisibleTracks(map);
             }
         });
         UiSettings uiSettings = map.getUiSettings();
@@ -442,4 +506,6 @@ public class MainActivity extends AppCompatActivity
 
     private void updateMap(GoogleMap map) {
     }
+
+
 }
