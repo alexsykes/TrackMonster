@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp"
+    android:layout_marginStart="4dp"
     android:longClickable="true"
     android:layout_marginTop="0dp"
     android:layout_marginBottom="0dp">
@@ -13,15 +13,10 @@
         android:layout_height="wrap_content"
         android:layout_weight="3"
         android:textAlignment="textStart"
-        android:textSize="18sp" />
+        android:textColor="@color/design_default_color_primary_dark" />
 
     <CheckBox
         android:id="@+id/isVisCheckbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <RadioButton
-        android:id="@+id/isCurrentRadioButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 </LinearLayout>

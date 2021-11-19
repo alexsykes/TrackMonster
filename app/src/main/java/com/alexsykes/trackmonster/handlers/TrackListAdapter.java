@@ -3,10 +3,10 @@ package com.alexsykes.trackmonster.handlers;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
@@ -17,7 +17,7 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.alexsykes.trackmonster.R;
-import com.alexsykes.trackmonster.activities.TrackListActivity;
+import com.alexsykes.trackmonster.activities.MainActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,7 +50,7 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
     public void onBindViewHolder(@NonNull TrackHolder holder, @SuppressLint("RecyclerView") int position) {
         theTrack = theTrackList.get(position);
         // holder.itemView.setBackgroundResource(R.color.list_highlist);
-        holder.isCurrentRadioButton.setChecked(1 == Integer.parseInt(Objects.requireNonNull(theTrack.get("isCurrent"))));
+        // holder.isCurrentRadioButton.setChecked(1 == Integer.parseInt(Objects.requireNonNull(theTrack.get("isCurrent"))));
         // holder.itemView.setBackgroundResource(R.color.list_highlist);
         holder.isVisCheckbox.setChecked(1 == Integer.parseInt(Objects.requireNonNull(theTrack.get("isVisible"))));
         holder.nameTextView.setText(theTrack.get("name"));
@@ -58,33 +58,33 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i("Info", "onClick: " + theTrackList.get(position).get("id"));
-                String id = theTrackList.get(position).get("id");
-                Context context = view.getContext();
-                ((TrackListActivity) context).onClickCalled(id);
+//                Log.i("Info", "onClick: " + theTrackList.get(position).get("id"));
+//                String id = theTrackList.get(position).get("id");
+//                Context context = view.getContext();
+//                ((TrackListActivity) context).onClickCalled(id);
             }
         });
 
-        holder.isCurrentRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                int trackid = Integer.valueOf(theTrackList.get(position).get("id"));
-                Log.i("Info", "isCurrentRadioButton.onCheckedChanged: " + trackid);
-
-                Context context = buttonView.getContext();
-                ((TrackListActivity) context).updateCurrent(trackid);
-            }
-        });
+//        holder.isCurrentRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                int trackid = Integer.valueOf(theTrackList.get(position).get("id"));
+//                Log.i("Info", "isCurrentRadioButton.onCheckedChanged: " + trackid);
+//
+//                Context context = buttonView.getContext();
+//                ((TrackListActivity) context).updateCurrent(trackid);
+//            }
+//        });
 
         holder.isVisCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                int trackid = Integer.valueOf(theTrackList.get(position).get("id"));
-                Log.i("Info", "isVisCheckbox.onCheckedChanged: " + trackid);
-                boolean checked;
-                checked = holder.isVisCheckbox.isChecked();
-                Context context = buttonView.getContext();
-                ((TrackListActivity) context).updateVisible(trackid, checked);
+//                int trackid = Integer.valueOf(theTrackList.get(position).get("id"));
+//                Log.i("Info", "isVisCheckbox.onCheckedChanged: " + trackid);
+//                boolean checked;
+//                checked = holder.isVisCheckbox.isChecked();
+//                Context context = buttonView.getContext();
+//                ((TrackListActivity) context).updateVisible(trackid, checked);
             }
         });
 
@@ -102,19 +102,19 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
             super(itemView);
 
             nameTextView = itemView.findViewById(R.id.name);
-            isCurrentRadioButton = itemView.findViewById(R.id.isCurrentRadioButton);
+            // isCurrentRadioButton = itemView.findViewById(R.id.isCurrentRadioButton);
             isVisCheckbox = itemView.findViewById(R.id.isVisCheckbox);
         }
 
-//        public void bind(final HashMap<String, String> theTrial, final OnItemClickListener listener) {
-//            itemView.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    String id = theTrial.get("id");
-//                    Context context = v.getContext();
-//                    ((TrackListActivity) context).onClickCalled(id);
-//                }
-//            });
+        public void bind(final HashMap<String, String> theTrial, final AdapterView.OnItemClickListener listener) {
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String id = theTrial.get("id");
+                    Context context = v.getContext();
+                    ((MainActivity) context).onClickCalled(id);
+                }
+            });
 //            itemView.setOnLongClickListener(new View.OnLongClickListener() {
 //                @Override
 //                public boolean onLongClick(View v) {
@@ -126,12 +126,12 @@ public class TrackListAdapter extends RecyclerView.Adapter<TrackListAdapter.Trac
 //                }
 //            });
 //        }
-
+//
 //        private void setActive(String id) {
 //            int trackID = Integer.valueOf(id);
 //            SharedPreferences.Editor editor = preferences.edit();
 //            editor.putInt("trackid", trackID);
 //            editor.apply();
-//        }
+        }
     }
 }

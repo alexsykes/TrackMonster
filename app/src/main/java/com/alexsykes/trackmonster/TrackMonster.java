@@ -38,7 +38,10 @@ public class TrackMonster extends Application {
             trackDbHelper = new TrackDbHelper(this);
             // Create database connection
             dbInit();
-            trackDbHelper.insertFirstTrack("Saudi test run");
+            for (int trackid = 1; trackid < 6; trackid++) {
+                String trackName = "Track " + trackid;
+                trackDbHelper.insertFirstTrack(trackName, trackid);
+            }
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean("hasRun", true);
             editor.apply();

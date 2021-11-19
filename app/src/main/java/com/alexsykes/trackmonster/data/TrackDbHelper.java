@@ -18,6 +18,7 @@ import java.util.HashMap;
 public class TrackDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "monster.db";
     private static final int DATABASE_VERSION = 1;
+    private int trackid;
 
     public TrackDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -326,9 +327,10 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         return trackid;
     }
 
-    public void insertFirstTrack(String name) {
+    public void insertFirstTrack(String name, int trackid) {
+        this.trackid = trackid;
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "INSERT  OR IGNORE INTO tracks  (_id, name, isvisible, iscurrent, style ) VALUES ('1','" + name + "', true,true, 'Track')";
+        String query = "INSERT  OR IGNORE INTO tracks  (_id, name, isvisible, iscurrent, style ) VALUES ('" + trackid + "','" + name + "', 1, 1, 'Track')";
         db.execSQL(query);
     }
 

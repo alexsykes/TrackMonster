@@ -8,7 +8,6 @@ import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -17,16 +16,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.alexsykes.trackmonster.MapStateManager;
 import com.alexsykes.trackmonster.R;
 import com.alexsykes.trackmonster.data.TrackData;
 import com.alexsykes.trackmonster.data.TrackDbHelper;
 import com.alexsykes.trackmonster.data.WaypointDbHelper;
+import com.alexsykes.trackmonster.handlers.TrackListAdapter;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -39,6 +39,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 // See https://developers.google.com/maps/documentation/android-sdk/map-with-marker
 // https://developers.google.com/maps/documentation/android-sdk/current-place-tutorial
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity
     int updateInterval;
     int trackid;
     public static final int DEFAULT_UPDATE_INTERVAL = 30;
+    RecyclerView trackListRecyclerView;
 
     // Flags
     private boolean isRecording;
@@ -86,17 +88,14 @@ public class MainActivity extends AppCompatActivity
     private Location lastKnownLocation;
     private CameraPosition cameraPosition;
     private MapStateManager mapStateManager;
-    private LocationCallback locationCallback;
-    private LocationRequest locationRequest;
     private TrackDbHelper trackDbHelper;
     private WaypointDbHelper waypointDbHelper;
     // UI
     private TextView statusTextView;
     private GoogleMap map;
 
-    PowerManager powerManager;
-    PowerManager.WakeLock wakeLock;
     private LatLng cameraPositionLatLng;
+    private ArrayList<HashMap<String, String>> theTrackList;
 
     // Lifecycle starts
     @Override
@@ -139,6 +138,7 @@ public class MainActivity extends AppCompatActivity
             statusText = statusText + "No track selected";
         }        // Set up FAB menu
         statusTextView.setText(statusText);
+        populateTrackList();
     }
 
     @Override
@@ -404,5 +404,31 @@ public class MainActivity extends AppCompatActivity
     private void setupUI() {
         // UI components
         statusTextView = findViewById(R.id.statusTextView);
+    }
+
+
+    private void populateTrackList() {
+        theTrackList = trackDbHelper.getShortTrackList();
+        trackListRecyclerView = findViewById(R.id.trackListRecyclerView);
+
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        trackListRecyclerView.setLayoutManager(llm);
+        trackListRecyclerView.setHasFixedSize(true);
+        initializeAdapter();
+    }
+
+    private void initializeAdapter() {
+        TrackListAdapter adapter = new TrackListAdapter(theTrackList);
+        trackListRecyclerView.setAdapter(adapter);
+    }
+
+
+    public void onClickCalled(String trackid) {
+        // Call another activity here and pass some arguments to it.
+//        Intent intent = new Intent(this, TrackDialogActivity.class);
+//        intent.putExtra("trackid", trackid);
+//        intent.putExtra("task", "update");
+//        startActivity(intent);
+        Log.i(TAG, "onClickCalled: ");
     }
 }

@@ -38,23 +38,25 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
         double lng = 40;
         double alt;
 
-        for(int i = 0; i < itemCount; i++) {
-            name = "Waypoint " + i;
-            lat += (0.5 - Math.random()) / 10;
-            lng += (0.5 - Math.random()) / 10;
-            alt = Math.random() * 1000;
-            String data = name + "::Data - lng: " + lng + " lat: " + lat;
-            Log.i("Info", data);
+        for (int track = 1; track < 6; track++) {
+            for (int i = 0; i < itemCount; i++) {
+                name = "Waypoint " + i;
+                lat += (0.5 - Math.random()) / 10;
+                lng += (0.5 - Math.random()) / 10;
+                alt = Math.random() * 1000;
+                String data = name + "::Data - lng: " + lng + " lat: " + lat;
+                Log.i("Info", data);
 
-            ContentValues values = new ContentValues();
+                ContentValues values = new ContentValues();
 
-            values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT, lat);
-            values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LNG, lng);
-            values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_NAME, name);
-            values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID, 1);
-            values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT, alt);
+                values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT, lat);
+                values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LNG, lng);
+                values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_NAME, name);
+                values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID, track);
+                values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT, alt);
 
-            db.insertWithOnConflict("waypoints", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                db.insertWithOnConflict("waypoints", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+            }
         }
     }
 
