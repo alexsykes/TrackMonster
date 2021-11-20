@@ -19,6 +19,7 @@ public class WaypointContract extends AppCompatActivity {
         public final static String COLUMN_WAYPOINTS_LNG = "lng";
         public final static String COLUMN_WAYPOINTS_CREATED = "created";
         public final static String COLUMN_WAYPOINTS_UPDATED = "updated";
+        public final static String COLUMN_WAYPOINTS_SEGMENT = "segment";
         public final static String COLUMN_WAYPOINTS_NAME = "name";
         public final static String COLUMN_WAYPOINTS_MARKER = "marker";
         public final static String COLUMN_WAYPOINTS_SPEED = "speed";

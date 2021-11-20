@@ -51,4 +51,5 @@
     <string name="email">email</string>
     <string name="saved_tracks">Saved tracks</string>
     <string name="import_track">Import track</string>
+    <string name="import_track_Details">Import track details</string>
 </resources>

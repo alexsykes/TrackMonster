@@ -28,7 +28,6 @@
         android:orientation="horizontal"
         android:weightSum="5">
 
-
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -52,7 +51,58 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:outlineAmbientShadowColor="@color/purple_700"
+                android:outlineSpotShadowColor="@color/purple_700">
+
+            </androidx.recyclerview.widget.RecyclerView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:alpha="0"
+            android:background="@color/white"
+            android:orientation="vertical">
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:alpha=".70"
+            android:background="@color/white"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/importTrackHeaderView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/purple_700"
+                android:padding="4dp"
+                android:text="@string/import_track_Details"
+                android:textColor="@color/list_highlist"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/trackDetailsTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:text=""
+                android:textColor="@color/purple_700" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/importRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:outlineAmbientShadowColor="@color/purple_700"
                 android:outlineSpotShadowColor="@color/purple_700" />
+
         </LinearLayout>
     </LinearLayout>
 

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -41,13 +42,19 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import io.ticofab.androidgpxparser.parser.GPXParser;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
+import io.ticofab.androidgpxparser.parser.domain.Track;
 
 // See https://developers.google.com/maps/documentation/android-sdk/map-with-marker
 // https://developers.google.com/maps/documentation/android-sdk/current-place-tutorial
@@ -62,6 +69,7 @@ import io.ticofab.androidgpxparser.parser.domain.Gpx;
 // https://stackoverflow.com/questions/34636722/android-saving-map-state-in-google-map
 // https://www.topografix.com/GPX/1/1/
 // https://github.com/ticofab/android-gpx-parser
+// https://stackoverflow.com/questions/30789116/implementing-a-file-picker-in-android-and-copying-the-selected-file-to-another-l
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback {
@@ -104,7 +112,7 @@ public class MainActivity extends AppCompatActivity
     private TrackDbHelper trackDbHelper;
     private WaypointDbHelper waypointDbHelper;
     // UI
-    private TextView statusTextView;
+    private TextView statusTextView, trackDetailTextView;
     private GoogleMap map;
 
     private LatLng cameraPositionLatLng;
@@ -149,25 +157,38 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void openFile() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        //intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-
-        //  intent.setType("Application/Vnd.google-earth.kml");
-
-        // Optionally, specify a URI for the file that should appear in the
-        // system file picker when it loads.
-        // intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri);
-
-        startActivityForResult(intent, PICK_GPX_FILE);
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent returnIntent) {
         super.onActivityResult(PICK_GPX_FILE, resultCode, returnIntent);
-
-        Log.i(TAG, "onActivityResult: ");
+        if (requestCode == PICK_GPX_FILE && resultCode == RESULT_OK) {
+            Uri content_describer = returnIntent.getData();
+            BufferedReader reader = null;
+            try {
+                // open the user-picked file for reading:
+                InputStream in = getContentResolver().openInputStream(content_describer);
+                // now read the content:
+                reader = new BufferedReader(new InputStreamReader(in));
+                String line;
+                StringBuilder builder = new StringBuilder();
+                while ((line = reader.readLine()) != null) {
+                    builder.append(line);
+                }
+                // Do something with the content in
+                decodeGPX(builder.toString());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -209,6 +230,46 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
         editor.apply();
+    }
+
+    // GPX import
+    private void openFile() {
+        // Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        Intent chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
+        chooseFile.setType("*/*");
+        chooseFile = Intent.createChooser(chooseFile, "Select a file");
+        startActivityForResult(chooseFile, PICK_GPX_FILE);
+    }
+
+    private void decodeGPX(String gpxDataString) {
+        GPXParser parser = new GPXParser();
+        Gpx parsedGpx = null;
+        try {
+            InputStream in = new ByteArrayInputStream(gpxDataString.getBytes());
+            parsedGpx = parser.parse(in);
+        } catch (IOException | XmlPullParserException e) {
+            e.printStackTrace();
+        }
+        if (parsedGpx == null) {
+            //  error
+        } else {
+            // Setup counters
+            int numTracks = 0;
+            int numSegments = 0;
+
+
+            numTracks += parsedGpx.getTracks().size();
+            for (int trackIndex = 0; trackIndex < numTracks; trackIndex++) {
+                List<Track> tracks = parsedGpx.getTracks();
+                Track track = tracks.get(trackIndex);
+                // List<TrackSegment> trackSegments = track.getTrackSegments();
+                numSegments += track.getTrackSegments().size();
+            }
+            trackDetailTextView = findViewById(R.id.trackDetailsTextView);
+            trackDetailTextView.setText("Number of tracks: " + numTracks +
+                    "\nNumber of segments: " + numSegments);
+            // Log.i(TAG, );
+        }
     }
 
     public void getGPSParser() {

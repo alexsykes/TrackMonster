@@ -7,6 +7,7 @@ public class Waypoint {
 
     int _id;
     int trackid;
+    int segment;
     String name;
     String created;
     String updated;

@@ -69,6 +69,7 @@ public class TrackMonster extends Application {
                 + WaypointContract.WaypointEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID + " INTEGER , "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_MARKER + " INTEGER , "
+                + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_SEGMENT + " INTEGER NOT NULL DEFAULT 1, "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT + " REAL, "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_NAME + " TEXT NOT NULL, "
                 + WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_CREATED + " TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, "
