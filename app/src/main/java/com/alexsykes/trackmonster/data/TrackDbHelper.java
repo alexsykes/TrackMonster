@@ -301,6 +301,28 @@ public class TrackDbHelper extends SQLiteOpenHelper {
         return trackid;
     }
 
+    public int insertTrackFromGPX(String name) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Add new track
+        ContentValues values = new ContentValues();
+        int trackid;
+
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_NAME, name);
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISVISIBLE, 1);
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_ISCURRENT, 0);
+        values.put(TrackContract.TrackEntry.COLUMN_TRACKS_STYLE, "Track");
+
+        db.insert("tracks", null, values);
+
+        String sql = "SELECT last_insert_rowid()";
+        Cursor cursor = db.rawQuery(sql, null);
+        cursor.moveToFirst();
+        trackid = cursor.getInt(0);
+        cursor.close();
+        return trackid;
+    }
+
     public int insertNewTrack() {
         SQLiteDatabase db = this.getWritableDatabase();
 

@@ -75,6 +75,20 @@ public class WaypointDbHelper extends SQLiteOpenHelper {
         db.insert("waypoints", null, values);
     }
 
+    public void addTrackPoint(int trackid, int segment, double lat, double lng, double alt) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LAT, lat);
+        values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_LNG, lng);
+        values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_SEGMENT, segment);
+        values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_NAME, "");
+        values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_TRACKID, trackid);
+        values.put(WaypointContract.WaypointEntry.COLUMN_WAYPOINTS_ALT, alt);
+
+        db.insert("waypoints", null, values);
+    }
+
     public ArrayList<LatLng> getTrackPoints(int trackID) {
         ArrayList<LatLng> theWaypoints = new ArrayList<LatLng>();
 

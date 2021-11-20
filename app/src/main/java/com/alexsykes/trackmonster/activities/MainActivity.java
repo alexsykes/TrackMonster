@@ -55,6 +55,8 @@ import java.util.List;
 import io.ticofab.androidgpxparser.parser.GPXParser;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
 import io.ticofab.androidgpxparser.parser.domain.Track;
+import io.ticofab.androidgpxparser.parser.domain.TrackPoint;
+import io.ticofab.androidgpxparser.parser.domain.TrackSegment;
 
 // See https://developers.google.com/maps/documentation/android-sdk/map-with-marker
 // https://developers.google.com/maps/documentation/android-sdk/current-place-tutorial
@@ -242,6 +244,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void decodeGPX(String gpxDataString) {
+        trackDetailTextView = findViewById(R.id.trackDetailsTextView);
         GPXParser parser = new GPXParser();
         Gpx parsedGpx = null;
         try {
@@ -251,43 +254,46 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
         if (parsedGpx == null) {
-            //  error
+            trackDetailTextView.setText("No valid GPX data found in file");
         } else {
+            WaypointDbHelper waypointDbHelper = new WaypointDbHelper(this);
+            TrackDbHelper trackDbHelper = new TrackDbHelper(this);
+
             // Setup counters
             int numTracks = 0;
             int numSegments = 0;
+            int numPoints = 0;
 
 
             numTracks += parsedGpx.getTracks().size();
             for (int trackIndex = 0; trackIndex < numTracks; trackIndex++) {
+                // Add Track to db and get Index
                 List<Track> tracks = parsedGpx.getTracks();
                 Track track = tracks.get(trackIndex);
-                // List<TrackSegment> trackSegments = track.getTrackSegments();
+                String trackName = track.getTrackName();
                 numSegments += track.getTrackSegments().size();
+
+                int trackid = trackDbHelper.insertTrackFromGPX(trackName);
+
+                // Don't forget to add track!!!
+                for (int segmentIndex = 0; segmentIndex < numSegments; segmentIndex++) {
+                    TrackSegment trackSegment = track.getTrackSegments().get(segmentIndex);
+                    numPoints += trackSegment.getTrackPoints().size();
+                    trackDetailTextView.setText(trackName +
+                            " Number of segments: " + numSegments +
+                            " Number of points: " + numPoints);
+                    for (int pointIndex = 0; pointIndex < numPoints; pointIndex++) {
+                        TrackPoint trackPoint = trackSegment.getTrackPoints().get(pointIndex);
+                        Double lat = trackPoint.getLatitude();
+                        Double lng = trackPoint.getLongitude();
+                        Double ele = trackPoint.getElevation();
+
+                        waypointDbHelper.addTrackPoint(trackid, segmentIndex, lat, lng, ele);
+                    }
+                }
             }
-            trackDetailTextView = findViewById(R.id.trackDetailsTextView);
-            trackDetailTextView.setText("Number of tracks: " + numTracks +
-                    "\nNumber of segments: " + numSegments);
-            // Log.i(TAG, );
         }
     }
-
-    public void getGPSParser() {
-        GPXParser parser = new GPXParser();
-        Gpx parsedGpx = null;
-        try {
-            InputStream in = getAssets().open("test.gpx");
-            parsedGpx = parser.parse(in);
-        } catch (IOException | XmlPullParserException e) {
-            e.printStackTrace();
-        }
-        if (parsedGpx == null) {
-            //  error
-        } else {
-
-        }
-    }
-
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
