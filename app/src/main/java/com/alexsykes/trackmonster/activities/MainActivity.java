@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -245,6 +246,7 @@ public class MainActivity extends AppCompatActivity
 
     private void decodeGPX(String gpxDataString) {
         trackDetailTextView = findViewById(R.id.trackDetailsTextView);
+        trackDetailTextView.setVisibility(View.GONE);
         GPXParser parser = new GPXParser();
         Gpx parsedGpx = null;
         try {
@@ -279,9 +281,10 @@ public class MainActivity extends AppCompatActivity
                 for (int segmentIndex = 0; segmentIndex < numSegments; segmentIndex++) {
                     TrackSegment trackSegment = track.getTrackSegments().get(segmentIndex);
                     numPoints += trackSegment.getTrackPoints().size();
-                    trackDetailTextView.setText(trackName +
+
+/*                    /trackDetailTextView.setText(trackName +
                             " Number of segments: " + numSegments +
-                            " Number of points: " + numPoints);
+                            " Number of points: " + numPoints);*/
                     for (int pointIndex = 0; pointIndex < numPoints; pointIndex++) {
                         TrackPoint trackPoint = trackSegment.getTrackPoints().get(pointIndex);
                         Double lat = trackPoint.getLatitude();
