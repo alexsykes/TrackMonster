@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -105,8 +106,10 @@ public class MainActivity extends AppCompatActivity
     public static final int FASTEST_UPDATE_INTERVAL = 5;
     private static final int ACTIVITY_REQUEST_CODE = 0;
     private static final int PERMISSION_FINE_LOCATION = 99;
-    private boolean requestingLocationUpdates;
     private static final String TAG = "Info";
+    private boolean requestingLocationUpdates;
+    private int mapType;
+
     TrackData currentTrack;
 
     private Location lastKnownLocation;
@@ -116,6 +119,9 @@ public class MainActivity extends AppCompatActivity
     private WaypointDbHelper waypointDbHelper;
     // UI
     private TextView statusTextView, trackDetailTextView;
+    private Button terrainMTypeButton;
+    private Button satelliteMTypeButton;
+    private Button normalMTypeButton;
     private GoogleMap map;
 
     private LatLng cameraPositionLatLng;
@@ -245,8 +251,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void decodeGPX(String gpxDataString) {
-        trackDetailTextView = findViewById(R.id.trackDetailsTextView);
-        trackDetailTextView.setVisibility(View.GONE);
+/*        trackDetailTextView = findViewById(R.id.trackDetailsTextView);
+        trackDetailTextView.setVisibility(View.GONE);*/
         GPXParser parser = new GPXParser();
         Gpx parsedGpx = null;
         try {
@@ -305,8 +311,6 @@ public class MainActivity extends AppCompatActivity
         super.onSaveInstanceState(outState);
     }
 
-
-
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
@@ -326,6 +330,7 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
         isRecording = prefs.getBoolean("isRecording", false);
+        mapType = prefs.getInt("mapType", GoogleMap.MAP_TYPE_TERRAIN);
         editor.putBoolean("canConnect", canConnect());
         editor.apply();
         updateInterval = prefs.getInt("interval", DEFAULT_UPDATE_INTERVAL);
@@ -375,9 +380,8 @@ public class MainActivity extends AppCompatActivity
         uiSettings.setCompassEnabled(true);
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setMapToolbarEnabled(true);
-        map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+        map.setMapType(mapType);
     }
-
 
 
     // Overloaded methods returning LatLngBounds for TrackData
@@ -502,7 +506,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
     // Utility
     protected synchronized void buildGoogleApiClient() {
         // mGoogleApiClient = new GoogleApiClient.Builder(this).build();
@@ -530,8 +533,40 @@ public class MainActivity extends AppCompatActivity
         // UI components
         statusTextView = findViewById(R.id.statusTextView);
         trackListRecyclerView = findViewById(R.id.trackListRecyclerView);
-    }
+        terrainMTypeButton = findViewById(R.id.terrainViewTypeButton);
+        satelliteMTypeButton = findViewById(R.id.satViewTypeButton);
+        normalMTypeButton = findViewById(R.id.normalViewTypeButton);
 
+        terrainMTypeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+                satelliteMTypeButton.setVisibility(View.VISIBLE);
+                normalMTypeButton.setVisibility(View.VISIBLE);
+                terrainMTypeButton.setVisibility(View.GONE);
+            }
+        });
+
+        normalMTypeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                satelliteMTypeButton.setVisibility(View.VISIBLE);
+                normalMTypeButton.setVisibility(View.GONE);
+                terrainMTypeButton.setVisibility(View.VISIBLE);
+            }
+        });
+
+        satelliteMTypeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                map.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                satelliteMTypeButton.setVisibility(View.GONE);
+                normalMTypeButton.setVisibility(View.VISIBLE);
+                terrainMTypeButton.setVisibility(View.VISIBLE);
+            }
+        });
+    }
 
     private void populateTrackList() {
         theTrackList = trackDbHelper.getShortTrackList();
