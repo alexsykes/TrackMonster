@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity
     // CONSTANTS
     private static final int DEFAULT_ZOOM = 14;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    private static final String KEY_IS_RECORDING = "isRecording";
+    private static final String KEY_MAPTYPE = "mapType";
     private static final String KEY_TRACKID = "trackid";
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // getPrefs();
         setupUI();
         setupMapIfNeeded();
         Log.i(TAG, "onCreate: ");
@@ -139,6 +140,8 @@ public class MainActivity extends AppCompatActivity
         if (savedInstanceState != null) {
             lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
             cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+            mapType = savedInstanceState.getInt(KEY_MAPTYPE);
+            map.setMapType(mapType);
         }
         getData();
     }
@@ -238,6 +241,7 @@ public class MainActivity extends AppCompatActivity
         // Save current state 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("mapType", mapType);
         editor.apply();
     }
 
@@ -308,6 +312,7 @@ public class MainActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle outState) {
         outState.putParcelable(KEY_CAMERA_POSITION, map.getCameraPosition());
         outState.putParcelable(KEY_LOCATION, lastKnownLocation);
+        outState.putInt(KEY_MAPTYPE, mapType);
         super.onSaveInstanceState(outState);
     }
 
@@ -537,33 +542,37 @@ public class MainActivity extends AppCompatActivity
         satelliteMTypeButton = findViewById(R.id.satViewTypeButton);
         normalMTypeButton = findViewById(R.id.normalViewTypeButton);
 
+
         terrainMTypeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-                satelliteMTypeButton.setVisibility(View.VISIBLE);
-                normalMTypeButton.setVisibility(View.VISIBLE);
-                terrainMTypeButton.setVisibility(View.GONE);
+                mapType = GoogleMap.MAP_TYPE_TERRAIN;
+                map.setMapType(mapType);
+                satelliteMTypeButton.setEnabled(true);
+                normalMTypeButton.setEnabled(true);
+                terrainMTypeButton.setEnabled(false);
             }
         });
 
         normalMTypeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-                satelliteMTypeButton.setVisibility(View.VISIBLE);
-                normalMTypeButton.setVisibility(View.GONE);
-                terrainMTypeButton.setVisibility(View.VISIBLE);
+                mapType = GoogleMap.MAP_TYPE_NORMAL;
+                map.setMapType(mapType);
+                satelliteMTypeButton.setEnabled(true);
+                normalMTypeButton.setEnabled(false);
+                terrainMTypeButton.setEnabled(true);
             }
         });
 
         satelliteMTypeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                map.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-                satelliteMTypeButton.setVisibility(View.GONE);
-                normalMTypeButton.setVisibility(View.VISIBLE);
-                terrainMTypeButton.setVisibility(View.VISIBLE);
+                mapType = GoogleMap.MAP_TYPE_SATELLITE;
+                map.setMapType(mapType);
+                satelliteMTypeButton.setEnabled(false);
+                normalMTypeButton.setEnabled(true);
+                terrainMTypeButton.setEnabled(true);
             }
         });
     }
